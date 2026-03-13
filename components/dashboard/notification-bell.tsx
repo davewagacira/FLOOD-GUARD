@@ -53,6 +53,14 @@ export function NotificationBell({ userId }: { userId?: string }) {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const unread = notifications.filter(n => !n.read).length;
+    const browserNotification =
+        typeof window !== 'undefined' && 'Notification' in window
+            ? window.Notification
+            : null;
+    const canUseBrowserNotifications =
+        Boolean(browserNotification) &&
+        typeof navigator !== 'undefined' &&
+        !/iPad|iPhone|iPod/i.test(navigator.userAgent);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -79,15 +87,22 @@ export function NotificationBell({ userId }: { userId?: string }) {
         setPulse(true);
         setTimeout(() => setPulse(false), 2000);
         // Browser notification if permitted
-        if (typeof window !== 'undefined' && Notification.permission === 'granted') {
-            new Notification(`FloodGuard: ${n.title}`, { body: n.body, icon: '/favicon.ico' });
+        if (canUseBrowserNotifications && browserNotification?.permission === 'granted') {
+            new browserNotification(`FloodGuard: ${n.title}`, { body: n.body, icon: '/favicon.ico' });
         }
     };
 
     // Connect to Ably
     useEffect(() => {
+        const ablyKey = process.env.NEXT_PUBLIC_ABLY_API_KEY;
+        if (!ablyKey) {
+            console.warn('[NotificationBell] NEXT_PUBLIC_ABLY_API_KEY is not set');
+            setConnected(false);
+            return;
+        }
+
         const client = new Ably.Realtime({
-            key: process.env.NEXT_PUBLIC_ABLY_API_KEY!,
+            key: ablyKey,
             clientId: userId ?? 'anonymous',
             recover: (_, cb) => cb(true),
         });
@@ -107,13 +122,8 @@ export function NotificationBell({ userId }: { userId?: string }) {
             ch.subscribe((msg) => addNotification(msg.name || 'UNKNOWN', msg.data as Record<string, unknown>));
         });
 
-        // Request browser notification permission
-        if (typeof window !== 'undefined' && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-
         return () => { client.close(); };
-    }, [userId]);
+    }, [browserNotification, canUseBrowserNotifications, userId]);
 
     const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     const dismiss = (id: string) => setNotifications(prev => prev.filter(n => n.id !== id));
