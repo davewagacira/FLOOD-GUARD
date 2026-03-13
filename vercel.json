@@ -1,0 +1,44 @@
+{
+    "buildCommand": "pnpm run build",
+    "installCommand": "pnpm install",
+    "framework": "nextjs",
+    "regions": [
+        "iad1"
+    ],
+    "functions": {
+        "app/api/**/*.ts": {
+            "maxDuration": 30
+        },
+        "app/api/weather/**/*.ts": {
+            "maxDuration": 60
+        },
+        "app/api/ai/**/*.ts": {
+            "maxDuration": 60
+        }
+    },
+    "headers": [
+        {
+            "source": "/api/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "GET,POST,PUT,DELETE,OPTIONS"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "Content-Type,Authorization,X-CRON-SECRET"
+                }
+            ]
+        }
+    ],
+    "crons": [
+        {
+            "path": "/api/weather/ingest",
+            "schedule": "0 * * * *"
+        }
+    ]
+}
