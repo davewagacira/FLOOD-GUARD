@@ -1,0 +1,616 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ORGANIZATIONS ────────────────────────────────────────────────────────────
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  type         OrgType
+  description  String?
+  contactEmail String?
+  contactPhone String?
+  logoUrl      String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users       User[]
+  floodZones  FloodZone[]
+  alerts      Alert[]
+  incidents   Incident[]
+
+  @@map("organizations")
+}
+
+enum OrgType {
+  ADMIN
+  DISASTER_MANAGEMENT
+  TELCO
+  NGO
+  GOVERNMENT
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  hashedPassword String
+  role           UserRole
+  isActive       Boolean   @default(true)
+  organizationId String
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  accounts     Account[]
+  sessions     Session[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  DISASTER_MANAGER
+  TELCO_OPERATOR
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── LOCATIONS ────────────────────────────────────────────────────────────────
+
+model Location {
+  id         String   @id @default(cuid())
+  name       String
+  county     String
+  subCounty  String?
+  ward       String?
+  latitude   Float
+  longitude  Float
+  population Int?
+  areaKm2    Float?
+  isUrban    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  floodZones       FloodZone[]
+  weatherSnapshots NormalizedWeatherSnapshot[]
+  floodAssessments FloodRiskAssessment[]
+  alerts           Alert[]
+  distressSignals  DistressSignal[]
+  shelters         Shelter[]
+  hospitals        Hospital[]
+  safeZones        SafeZone[]
+  smsRecipients    SmsRecipient[]
+
+  @@map("locations")
+}
+
+// ─── FLOOD ZONES ──────────────────────────────────────────────────────────────
+
+model FloodZone {
+  id                   String    @id @default(cuid())
+  name                 String
+  code                 String    @unique
+  locationId           String
+  organizationId       String
+  polygonCoordinates   Json
+  riskLevel            RiskLevel @default(LOW)
+  drainageScore        Float     @default(50)
+  riverProximityKm     Float?
+  elevationM           Float?
+  historicalFloodScore Float     @default(0)
+  population           Int?
+  isActive             Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  location        Location              @relation(fields: [locationId], references: [id])
+  organization    Organization          @relation(fields: [organizationId], references: [id])
+  assessments     FloodRiskAssessment[]
+  alertRecipients AlertRecipient[]
+  smsRecipients   SmsRecipient[]
+
+  @@map("flood_zones")
+}
+
+// ─── WEATHER PROVIDERS ────────────────────────────────────────────────────────
+
+model WeatherProviderConfig {
+  id        String          @id @default(cuid())
+  provider  WeatherProvider
+  apiKey    String
+  baseUrl   String
+  isActive  Boolean         @default(true)
+  isPrimary Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  observations WeatherObservation[]
+
+  @@map("weather_provider_configs")
+}
+
+enum WeatherProvider {
+  TOMORROW_IO
+  OPENWEATHER
+}
+
+model WeatherObservation {
+  id                       String   @id @default(cuid())
+  providerId               String
+  locationId               String?
+  latitude                 Float
+  longitude                Float
+  observedAt               DateTime
+  precipitationIntensity   Float
+  precipitationProbability Float
+  humidity                 Float
+  windSpeed                Float
+  windDirection            Float?
+  temperature              Float
+  cloudCover               Float?
+  uvIndex                  Float?
+  rawPayload               Json
+  createdAt                DateTime @default(now())
+
+  provider WeatherProviderConfig @relation(fields: [providerId], references: [id])
+
+  @@map("weather_observations")
+}
+
+model NormalizedWeatherSnapshot {
+  id                       String   @id @default(cuid())
+  locationId               String
+  snapshotAt               DateTime
+  precipitationIntensity   Float
+  precipitationProbability Float
+  humidity                 Float
+  windSpeed                Float
+  temperature              Float
+  confidenceScore          Float
+  tomorrowPayload          Json?
+  openweatherPayload       Json?
+  createdAt                DateTime @default(now())
+
+  location        Location              @relation(fields: [locationId], references: [id])
+  riskAssessments FloodRiskAssessment[]
+
+  @@map("normalized_weather_snapshots")
+}
+
+// ─── FLOOD RISK ───────────────────────────────────────────────────────────────
+
+model FloodRiskAssessment {
+  id              String    @id @default(cuid())
+  locationId      String
+  floodZoneId     String?
+  snapshotId      String?
+  riskScore       Float
+  riskLevel       RiskLevel
+  rainfallScore   Float
+  riverScore      Float
+  drainageScore   Float
+  historicalScore Float
+  elevationScore  Float
+  assessedAt      DateTime  @default(now())
+  expiresAt       DateTime
+
+  location  Location                    @relation(fields: [locationId], references: [id])
+  floodZone FloodZone?                  @relation(fields: [floodZoneId], references: [id])
+  snapshot  NormalizedWeatherSnapshot?  @relation(fields: [snapshotId], references: [id])
+  alerts    Alert[]
+
+  @@map("flood_risk_assessments")
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ─── ALERTS ───────────────────────────────────────────────────────────────────
+
+model Alert {
+  id               String      @id @default(cuid())
+  title            String
+  message          String      @db.Text
+  riskLevel        RiskLevel
+  status           AlertStatus @default(DRAFT)
+  organizationId   String
+  locationId       String?
+  assessmentId     String?
+  scheduledAt      DateTime?
+  sentAt           DateTime?
+  approvedAt       DateTime?
+  approvedByUserId String?
+  expiresAt        DateTime?
+  recipientCount   Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  organization Organization         @relation(fields: [organizationId], references: [id])
+  location     Location?            @relation(fields: [locationId], references: [id])
+  assessment   FloodRiskAssessment? @relation(fields: [assessmentId], references: [id])
+  recipients   AlertRecipient[]
+  smsMessages  SmsMessage[]
+
+  @@map("alerts")
+}
+
+enum AlertStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  SENDING
+  SENT
+  CANCELLED
+  EXPIRED
+}
+
+model AlertRecipient {
+  id          String    @id @default(cuid())
+  alertId     String
+  floodZoneId String
+  phoneNumber String
+  name        String?
+  status      String    @default("PENDING")
+  sentAt      DateTime?
+  deliveredAt DateTime?
+
+  alert     Alert     @relation(fields: [alertId], references: [id])
+  floodZone FloodZone @relation(fields: [floodZoneId], references: [id])
+
+  @@map("alert_recipients")
+}
+
+// ─── SMS ──────────────────────────────────────────────────────────────────────
+
+model SmsRecipient {
+  id          String    @id @default(cuid())
+  phoneNumber String
+  locationId  String
+  zoneId      String
+  createdAt   DateTime  @default(now())
+
+  location    Location  @relation(fields: [locationId], references: [id])
+  zone        FloodZone @relation(fields: [zoneId],    references: [id])
+
+  @@map("sms_recipients")
+}
+
+model SmsMessage {
+  id          String       @id @default(cuid())
+  alertId     String?
+  phoneNumber String
+  message     String       @db.Text
+  direction   SmsDirection
+  status      SmsStatus    @default(QUEUED)
+  providerId  String?
+  cost        Float?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  failedAt    DateTime?
+  errorCode   String?
+  errorMsg    String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  alert Alert? @relation(fields: [alertId], references: [id])
+
+  @@map("sms_messages")
+}
+
+enum SmsDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum SmsStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  REJECTED
+}
+
+// ─── DISTRESS SIGNALS ─────────────────────────────────────────────────────────
+
+model DistressSignal {
+  id          String         @id @default(cuid())
+  phoneNumber String
+  locationId  String?
+  rawMessage  String
+  signalType  DistressType
+  status      DistressStatus @default(RECEIVED)
+  incidentId  String?
+  latitude    Float?
+  longitude   Float?
+  resolvedAt  DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  location Location? @relation(fields: [locationId], references: [id])
+  incident Incident? @relation(fields: [incidentId], references: [id])
+
+  @@map("distress_signals")
+}
+
+enum DistressType {
+  NEED_HELP
+  SAFE
+  FREE_TEXT
+}
+
+enum DistressStatus {
+  RECEIVED
+  ACKNOWLEDGED
+  ASSIGNED
+  RESOLVED
+}
+
+// ─── INCIDENTS ────────────────────────────────────────────────────────────────
+
+model Incident {
+  id             String           @id @default(cuid())
+  title          String
+  description    String?          @db.Text
+  locationId     String?
+  organizationId String?
+  severity       IncidentSeverity
+  status         IncidentStatus   @default(OPEN)
+  latitude       Float?
+  longitude      Float?
+  affectedCount  Int?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  resolvedAt     DateTime?
+
+  updates         IncidentUpdate[]
+  distressSignals DistressSignal[]
+  deployments     Deployment[]
+  organization    Organization?   @relation(fields: [organizationId], references: [id])
+
+  @@map("incidents")
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  MONITORING
+  RESOLVED
+  CLOSED
+}
+
+model IncidentUpdate {
+  id         String   @id @default(cuid())
+  incidentId String
+  message    String   @db.Text
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id])
+
+  @@map("incident_updates")
+}
+
+// ─── RESCUE RESOURCES ─────────────────────────────────────────────────────────
+
+model RescueResource {
+  id             String       @id @default(cuid())
+  name           String
+  type           ResourceType
+  organizationId String?
+  capacity       Int?
+  isAvailable    Boolean      @default(true)
+  latitude       Float?
+  longitude      Float?
+  contactPhone   String?
+  createdAt      DateTime     @default(now())
+
+  deployments Deployment[]
+
+  @@map("rescue_resources")
+}
+
+enum ResourceType {
+  BOAT
+  HELICOPTER
+  TRUCK
+  MEDICAL_TEAM
+  RESCUE_TEAM
+  SUPPLY_TRUCK
+}
+
+model Deployment {
+  id           String           @id @default(cuid())
+  incidentId   String
+  resourceId   String
+  status       DeploymentStatus @default(DISPATCHED)
+  latitude     Float?
+  longitude    Float?
+  dispatchedAt DateTime         @default(now())
+  arrivedAt    DateTime?
+  completedAt  DateTime?
+
+  incident Incident       @relation(fields: [incidentId], references: [id])
+  resource RescueResource @relation(fields: [resourceId], references: [id])
+
+  @@map("deployments")
+}
+
+enum DeploymentStatus {
+  DISPATCHED
+  EN_ROUTE
+  ON_SITE
+  COMPLETED
+  RECALLED
+}
+
+// ─── SHELTERS & HOSPITALS ─────────────────────────────────────────────────────
+
+model Shelter {
+  id               String   @id @default(cuid())
+  name             String
+  locationId       String
+  address          String?
+  capacity         Int
+  currentOccupancy Int      @default(0)
+  isActive         Boolean  @default(true)
+  latitude         Float
+  longitude        Float
+  contactPhone     String?
+  createdAt        DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@map("shelters")
+}
+
+model Hospital {
+  id           String   @id @default(cuid())
+  name         String
+  locationId   String
+  address      String?
+  beds         Int?
+  hasEmergency Boolean  @default(true)
+  latitude     Float
+  longitude    Float
+  contactPhone String?
+  createdAt    DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@map("hospitals")
+}
+
+model SafeZone {
+  id         String   @id @default(cuid())
+  name       String
+  locationId String
+  capacity   Int?
+  latitude   Float
+  longitude  Float
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@map("safe_zones")
+}
+
+// ─── SYSTEM & AUDIT ───────────────────────────────────────────────────────────
+
+model WebhookLog {
+  id          String    @id @default(cuid())
+  source      String
+  endpoint    String
+  payload     Json
+  statusCode  Int?
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  @@map("webhook_logs")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SystemHealthCheck {
+  id         String       @id @default(cuid())
+  service    String
+  status     HealthStatus
+  responseMs Int?
+  message    String?
+  checkedAt  DateTime     @default(now())
+
+  @@map("system_health_checks")
+}
+
+enum HealthStatus {
+  UP
+  DEGRADED
+  DOWN
+}
+
+model SmsProviderConfig {
+  id        String   @id @default(cuid())
+  name      String
+  baseUrl   String
+  apiKey    String
+  senderId  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sms_provider_configs")
+}

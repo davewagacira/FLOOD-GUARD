@@ -1,0 +1,98 @@
+﻿.next/dev/types/validator.ts(243,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/alerts/[id]/status/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/alerts/[id]/status">'.
+  Types of property 'PATCH' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; status: AlertStatus; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(252,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/alerts/[id]/trigger/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/alerts/[id]/trigger">'.
+  Types of property 'POST' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ message: string; count: number; }> | NextResponse<...>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(333,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/flood-zones/[id]/nearby/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/flood-zones/[id]/nearby">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ zoneId: string; lat: number; lng: number; nearby: never[]; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(342,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/flood-zones/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/flood-zones/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ location: { name: string; id: string; createdAt: Date; ... 7 more ...; isUrban: boolean; }; assessments: { ...; }[]; } & { ...; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(351,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/flood-zones/[id]/weather/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/flood-zones/[id]/weather">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ zone: { location: { name: string; id: string; createdAt: Date; ... 7 more ...; isUrban: boolean; }; } & { ...; }; snapshot: { ...; } | null; assessment: { ...; } | null; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(243,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/alerts/[id]/status/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/alerts/[id]/status">'.
+  Types of property 'PATCH' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; status: AlertStatus; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(252,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/alerts/[id]/trigger/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/alerts/[id]/trigger">'.
+  Types of property 'POST' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ message: string; count: number; }> | NextResponse<...>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(333,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/flood-zones/[id]/nearby/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/flood-zones/[id]/nearby">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ zoneId: string; lat: number; lng: number; nearby: never[]; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(342,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/flood-zones/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/flood-zones/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ location: { name: string; id: string; createdAt: Date; ... 7 more ...; isUrban: boolean; }; assessments: { ...; }[]; } & { ...; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(351,31): error TS2344: Type 'typeof import("D:/DEVELOPER/SOFTWARE PROJECTS/PROJECTS/DYNAMIC PROJECTS/Flood Guard/app/api/flood-zones/[id]/weather/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/flood-zones/[id]/weather">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ zone: { location: { name: string; id: string; createdAt: Date; ... 7 more ...; isUrban: boolean; }; } & { ...; }; snapshot: { ...; } | null; assessment: { ...; } | null; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+app/api/alerts/[id]/trigger/route.ts(47,25): error TS2322: Type '"COMPLETED"' is not assignable to type 'AlertStatus | EnumAlertStatusFieldUpdateOperationsInput | undefined'.
+app/api/alerts/[id]/trigger/route.ts(81,21): error TS2322: Type '"COMPLETED" | "FAILED"' is not assignable to type 'AlertStatus | EnumAlertStatusFieldUpdateOperationsInput | undefined'.
+  Type '"COMPLETED"' is not assignable to type 'AlertStatus | EnumAlertStatusFieldUpdateOperationsInput | undefined'.
+app/api/rescue-resources/route.ts(9,13): error TS2353: Object literal may only specify known properties, and 'organization' does not exist in type 'RescueResourceInclude<DefaultArgs>'.
+app/api/sms/broadcasts/route.ts(9,56): error TS2322: Type '"COMPLETED"' is not assignable to type 'AlertStatus'.
+app/api/sms/incoming/route.ts(7,10): error TS2305: Module '"@/lib/sms/sms-provider"' has no exported member 'parseIncomingSms'.
+app/api/sms/incoming/route.ts(7,28): error TS2459: Module '"@/lib/sms/sms-provider"' declares 'normalizePhone' locally, but it is not exported.
+app/dashboard/flood-map/page.tsx(68,30): error TS2503: Cannot find namespace 'google'.
+app/dashboard/flood-map/page.tsx(69,41): error TS2503: Cannot find namespace 'google'.
+app/dashboard/flood-map/page.tsx(70,41): error TS2503: Cannot find namespace 'google'.
+app/dashboard/flood-map/page.tsx(71,26): error TS2503: Cannot find namespace 'google'.
+app/dashboard/flood-map/page.tsx(72,29): error TS2503: Cannot find namespace 'google'.
+app/dashboard/flood-map/page.tsx(156,33): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(179,29): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(179,71): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(182,32): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(205,26): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(218,26): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(220,105): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(220,143): error TS2304: Cannot find name 'google'.
+app/dashboard/flood-map/page.tsx(268,18): error TS2304: Cannot find name 'google'.
+app/dashboard/page.tsx(15,34): error TS2367: This comparison appears to be unintentional because the types '"ngo" | "telco"' and '"ADMIN"' have no overlap.
+app/dashboard/page.tsx(17,39): error TS2367: This comparison appears to be unintentional because the types '"telco"' and '"DISASTER_MANAGER"' have no overlap.
+components/dashboard/notification-bell.tsx(107,51): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+lib/realtime/ably.ts(68,13): error TS2559: Type '(err: any, token: any) => void' has no properties in common with type 'AuthOptions'.
+lib/realtime/ably.ts(68,14): error TS7006: Parameter 'err' implicitly has an 'any' type.
+lib/realtime/ably.ts(68,19): error TS7006: Parameter 'token' implicitly has an 'any' type.

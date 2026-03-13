@@ -1,0 +1,363 @@
+// Dashboard Data Repositories
+// Live DB queries replacing all mock data
+
+import { prisma } from "@/lib/db/prisma";
+import { startOfDay, subDays } from "date-fns";
+
+// ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
+
+export async function getAdminDashboardMetrics() {
+    const now = new Date();
+    const oneDayAgo = subDays(now, 1);
+    const sevenDaysAgo = subDays(now, 7);
+    const thirtyDaysAgo = subDays(now, 30);
+
+    const [
+        totalOrgs,
+        totalUsers,
+        activeFloodZones,
+        highRiskZones,
+        activeAlerts,
+        smsSentToday,
+        smsSentThisWeek,
+        recentAuditLogs,
+        latestHealthChecks,
+        orgGrowthRaw,
+        smsDailyRaw,
+    ] = await Promise.all([
+        // Total organizations
+        prisma.organization.count({ where: { isActive: true } }),
+
+        // Total users
+        prisma.user.count({ where: { isActive: true } }),
+
+        // Active flood zones
+        prisma.floodZone.count({ where: { isActive: true } }),
+
+        // High or critical risk zones (from assessments)
+        prisma.floodZone.count({
+            where: {
+                isActive: true,
+                riskLevel: { in: ["HIGH", "CRITICAL"] },
+            },
+        }),
+
+        // Active alerts
+        prisma.alert.count({
+            where: { status: { in: ["PENDING_APPROVAL", "APPROVED", "SENDING"] } },
+        }),
+
+        // SMS sent today
+        prisma.smsMessage.count({
+            where: {
+                direction: "OUTBOUND",
+                createdAt: { gte: startOfDay(now) },
+            },
+        }),
+
+        // SMS sent this week
+        prisma.smsMessage.count({
+            where: {
+                direction: "OUTBOUND",
+                createdAt: { gte: sevenDaysAgo },
+            },
+        }),
+
+        // Recent audit logs
+        prisma.auditLog.findMany({
+            take: 10,
+            orderBy: { createdAt: "desc" },
+            include: { user: { select: { name: true, email: true } } },
+        }),
+
+        // Latest health checks per service
+        prisma.systemHealthCheck.findMany({
+            orderBy: { checkedAt: "desc" },
+            distinct: ["service"],
+            take: 10,
+        }),
+
+        // Org growth last 6 months (grouped by month)
+        prisma.$queryRaw<{ month: string; count: bigint }[]>`
+      SELECT TO_CHAR(DATE_TRUNC('month', "createdAt"), 'Mon') as month,
+             COUNT(*) as count
+      FROM organizations
+      WHERE "createdAt" >= ${thirtyDaysAgo}
+      GROUP BY DATE_TRUNC('month', "createdAt")
+      ORDER BY DATE_TRUNC('month', "createdAt")
+    `,
+
+        // Daily SMS for last 7 days
+        prisma.$queryRaw<{ day: string; count: bigint }[]>`
+      SELECT TO_CHAR(DATE_TRUNC('day', "createdAt"), 'Dy') as day,
+             COUNT(*) as count
+      FROM sms_messages
+      WHERE direction = 'OUTBOUND'
+        AND "createdAt" >= ${sevenDaysAgo}
+      GROUP BY DATE_TRUNC('day', "createdAt")
+      ORDER BY DATE_TRUNC('day', "createdAt")
+    `,
+    ]);
+
+    return {
+        metrics: {
+            totalOrgs,
+            totalUsers,
+            activeFloodZones,
+            highRiskZones,
+            activeAlerts,
+            smsSentToday,
+            smsSentThisWeek,
+        },
+        recentAuditLogs,
+        latestHealthChecks,
+        charts: {
+            orgGrowth: orgGrowthRaw.map((r) => ({
+                name: r.month,
+                organizations: Number(r.count),
+            })),
+            smsDailyVolume: smsDailyRaw.map((r) => ({
+                date: r.day,
+                count: Number(r.count),
+            })),
+        },
+    };
+}
+
+// ─── NGO / DISASTER MANAGEMENT DASHBOARD ─────────────────────────────────────
+
+export async function getNgoDashboardMetrics(organizationId?: string) {
+    const now = new Date();
+    const oneDayAgo = subDays(now, 1);
+
+    const orgFilter = organizationId ? { organizationId } : {};
+
+    const [
+        activeIncidents,
+        distressSignals24h,
+        unresolvedDistress,
+        deployedTeams,
+        highRiskZones,
+        incidentsBySeverity,
+        recentIncidents,
+        recentDistress,
+        floodZoneRisks,
+    ] = await Promise.all([
+        // Active incidents
+        prisma.incident.count({
+            where: {
+                ...orgFilter,
+                status: { in: ["OPEN", "IN_PROGRESS", "MONITORING"] },
+            },
+        }),
+
+        // Distress signals in last 24h
+        prisma.distressSignal.count({
+            where: {
+                createdAt: { gte: oneDayAgo },
+            },
+        }),
+
+        // Unresolved distress signals
+        prisma.distressSignal.count({
+            where: {
+                status: { in: ["RECEIVED", "ACKNOWLEDGED"] },
+                signalType: "NEED_HELP",
+            },
+        }),
+
+        // Active rescue deployments
+        prisma.deployment.count({
+            where: { status: { in: ["DISPATCHED", "EN_ROUTE", "ON_SITE"] } },
+        }),
+
+        // High/critical risk zones
+        prisma.floodZone.count({
+            where: {
+                isActive: true,
+                riskLevel: { in: ["HIGH", "CRITICAL"] },
+            },
+        }),
+
+        // Incidents by severity (for chart)
+        prisma.incident.groupBy({
+            by: ["severity"],
+            where: {
+                ...orgFilter,
+                status: { not: "CLOSED" },
+            },
+            _count: true,
+        }),
+
+        // Recent incidents with location
+        prisma.incident.findMany({
+            where: { ...orgFilter },
+            take: 8,
+            orderBy: { createdAt: "desc" },
+            include: {
+                _count: { select: { distressSignals: true } },
+            },
+        }),
+
+        // Recent distress signals
+        prisma.distressSignal.findMany({
+            take: 10,
+            orderBy: { createdAt: "desc" },
+            include: { location: true },
+        }),
+
+        // Flood zones with current risk levels and latest assessment
+        prisma.floodZone.findMany({
+            where: { isActive: true },
+            take: 20,
+            orderBy: [{ riskLevel: "desc" }],
+            include: {
+                location: true,
+                assessments: {
+                    take: 1,
+                    orderBy: { assessedAt: "desc" },
+                },
+            },
+        }),
+    ]);
+
+    const incidentSeverityChart = incidentsBySeverity.map((item) => ({
+        name: item.severity,
+        count: item._count,
+    }));
+
+    return {
+        metrics: {
+            activeIncidents,
+            distressSignals24h,
+            unresolvedDistress,
+            deployedTeams,
+            highRiskZones,
+        },
+        incidentSeverityChart,
+        recentIncidents,
+        recentDistress,
+        floodZoneRisks,
+    };
+}
+
+// ─── TELCO / SMS DASHBOARD ────────────────────────────────────────────────────
+
+export async function getTelcoDashboardMetrics() {
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const sevenDaysAgo = subDays(now, 7);
+
+    const [
+        smsSentToday,
+        smsDeliveredToday,
+        smsFailedToday,
+        pendingAlerts,
+        recentBroadcasts,
+        incomingReplies,
+        deliveryByHour,
+        weeklyVolume,
+    ] = await Promise.all([
+        // SMS sent today
+        prisma.smsMessage.count({
+            where: { direction: "OUTBOUND", createdAt: { gte: todayStart } },
+        }),
+
+        // Delivered today
+        prisma.smsMessage.count({
+            where: {
+                direction: "OUTBOUND",
+                status: "DELIVERED",
+                createdAt: { gte: todayStart },
+            },
+        }),
+
+        // Failed today
+        prisma.smsMessage.count({
+            where: {
+                direction: "OUTBOUND",
+                status: "FAILED",
+                createdAt: { gte: todayStart },
+            },
+        }),
+
+        // Pending alert approvals
+        prisma.alert.findMany({
+            where: { status: "PENDING_APPROVAL" },
+            take: 10,
+            orderBy: { createdAt: "desc" },
+            include: { location: true, organization: true },
+        }),
+
+        // Recent broadcasts (sent alerts)
+        prisma.alert.findMany({
+            where: { status: { in: ["SENT", "SENDING"] } },
+            take: 8,
+            orderBy: { sentAt: "desc" },
+            include: { location: true },
+        }),
+
+        // Incoming citizen replies
+        prisma.smsMessage.findMany({
+            where: { direction: "INBOUND" },
+            take: 15,
+            orderBy: { createdAt: "desc" },
+        }),
+
+        // Delivery success rate by hour (last 24h)
+        prisma.$queryRaw<{ hour: number; success: bigint; total: bigint }[]>`
+      SELECT EXTRACT(HOUR FROM "createdAt") as hour,
+             COUNT(*) FILTER (WHERE status = 'DELIVERED') as success,
+             COUNT(*) as total
+      FROM sms_messages
+      WHERE direction = 'OUTBOUND'
+        AND "createdAt" >= NOW() - INTERVAL '24 hours'
+      GROUP BY EXTRACT(HOUR FROM "createdAt")
+      ORDER BY hour
+    `,
+
+        // Weekly SMS volume
+        prisma.$queryRaw<{ day: string; count: bigint }[]>`
+      SELECT TO_CHAR(DATE_TRUNC('day', "createdAt"), 'Dy') as day,
+             COUNT(*) as count
+      FROM sms_messages
+      WHERE direction = 'OUTBOUND'
+        AND "createdAt" >= ${sevenDaysAgo}
+      GROUP BY DATE_TRUNC('day', "createdAt")
+      ORDER BY DATE_TRUNC('day', "createdAt")
+    `,
+    ]);
+
+    const deliveryRate =
+        smsSentToday > 0
+            ? Math.round((smsDeliveredToday / smsSentToday) * 1000) / 10
+            : 0;
+
+    return {
+        metrics: {
+            smsSentToday,
+            smsDeliveredToday,
+            smsFailedToday,
+            deliveryRate,
+            pendingApprovalsCount: pendingAlerts.length,
+        },
+        pendingAlerts,
+        recentBroadcasts,
+        incomingReplies,
+        charts: {
+            deliveryByHour: deliveryByHour.map((r) => ({
+                hour: `${String(r.hour).padStart(2, "0")}:00`,
+                success: Number(r.success),
+                total: Number(r.total),
+                rate:
+                    Number(r.total) > 0
+                        ? Math.round((Number(r.success) / Number(r.total)) * 100)
+                        : 0,
+            })),
+            weeklyVolume: weeklyVolume.map((r) => ({
+                time: r.day,
+                count: Number(r.count),
+            })),
+        },
+    };
+}
