@@ -34,17 +34,17 @@ export default function LandingPage() {
         </div>
 
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16">
-          <div className="space-y-8">
+          <div className="space-y-8 text-center md:text-left">
             <div className="space-y-4">
               <h1 className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
                 Real-time <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">disaster intelligence</span>
               </h1>
-              <p className="max-w-lg text-lg text-slate-300 sm:text-xl">
+              <p className="mx-auto max-w-lg text-lg text-slate-300 sm:text-xl md:mx-0">
                 Monitor flood risks, coordinate emergency response, and orchestrate critical SMS alerts all in one unified platform.
               </p>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center md:justify-start">
               <Link href="/login" className="inline-flex items-center justify-center rounded-full bg-orange-500 px-8 py-3 font-semibold text-white transition-colors hover:bg-orange-600">
                 Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
