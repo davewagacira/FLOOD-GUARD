@@ -659,6 +659,9 @@ export default function FloodMapPage() {
                           <button onClick={() => refreshZoneWeather(selected)} className="px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded-lg text-sm hover:bg-orange-500/20 transition-all">
                             Fetch Weather Now
                           </button>
+                          {actionError && (
+                            <p className="mt-3 text-xs text-orange-400">{actionError}</p>
+                          )}
                         </div>
                       )}
                     </div>
