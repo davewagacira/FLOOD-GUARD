@@ -23,3 +23,4 @@ keys/
 !package.json
 !vercel.json
 !components.json
+!tsconfig.json
