@@ -19,7 +19,7 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-3">
           <img src="/flood-guard-logo.png" alt="FloodGuard Logo" className="h-10 w-10 rounded-lg object-contain" />
-          <span className="hidden text-xl font-bold text-white sm:inline">FloodGuard</span>
+          <span className="text-lg font-bold text-white sm:text-xl">FloodGuard</span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -63,6 +63,20 @@ export function Header() {
               transition={{ duration: 0.24, ease: 'easeOut' }}
               className="fixed right-0 top-0 z-50 flex h-screen w-[86vw] max-w-sm flex-col border-l border-slate-800 bg-slate-950/98 px-5 pb-6 pt-20 shadow-2xl shadow-black/40 md:hidden"
             >
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/90 text-slate-200 transition-colors hover:bg-slate-800"
+                aria-label="Close navigation menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="mb-6 flex items-center gap-3 pr-12">
+                <img src="/flood-guard-logo.png" alt="FloodGuard Logo" className="h-10 w-10 rounded-lg object-contain" />
+                <span className="text-lg font-bold text-white">FloodGuard</span>
+              </div>
+
               <div className="space-y-2">
                 {navItems.map((item) => (
                   <Link

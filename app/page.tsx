@@ -9,6 +9,8 @@ export const metadata = {
 };
 
 export default function LandingPage() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
       <Header />
@@ -148,7 +150,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-slate-800 px-4 py-8 sm:px-6">
         <div className="mx-auto max-w-7xl text-center text-slate-400">
-          <p>&copy; 2024 FloodGuard. Protecting Communities from Disaster.</p>
+          <p>&copy; {currentYear} FloodGuard. Protecting Communities from Disaster.</p>
         </div>
       </footer>
     </div>
