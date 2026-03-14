@@ -1,5 +1,5 @@
 /**
- * FloodGuard — Update DB users to final values (all pass: pass123)
+ * FloodGuard — Update DB users to final values (all pass: Pass@123#)
  * Run: npx tsx scripts/update-users.ts
  */
 
@@ -19,9 +19,9 @@ const adapter = new PrismaPg(pool as any);
 const prisma = new PrismaClient({ adapter } as any);
 
 async function main() {
-    console.log("🔧 Updating FloodGuard users (password: pass123)...\n");
+    console.log("🔧 Updating FloodGuard users (password: Pass@123#)...\n");
 
-    const pass = await bcrypt.hash("pass123", 10);
+    const pass = await bcrypt.hash("Pass@123#", 10);
 
     // ── 1. Admin (us) ─────────────────────────────────────────────────────────
     const admin = await prisma.user.upsert({
@@ -87,13 +87,14 @@ async function main() {
     });
     if (deleted.count > 0) console.log(`🗑️  Removed ${deleted.count} extra user(s)`);
 
-    console.log("\n📋 Login credentials (all use password: pass123)");
-    console.log("   admin@floodguard.ke      →  ADMIN            (pass123)");
-    console.log("   operator@safaricom.ke    →  TELCO_OPERATOR   (pass123)");
-    console.log("   coordinator@redcross.ke  →  DISASTER_MANAGER (pass123)");
+    console.log("\n📋 Login credentials (all use password: Pass@123#)");
+    console.log("   admin@floodguard.ke      →  ADMIN            (Pass@123#)");
+    console.log("   operator@safaricom.ke    →  TELCO_OPERATOR   (Pass@123#)");
+    console.log("   coordinator@redcross.ke  →  DISASTER_MANAGER (Pass@123#)");
     console.log("\n✅ Done!");
 }
 
 main()
     .catch((e) => { console.error("❌ Failed:", e); process.exit(1); })
     .finally(async () => { await prisma.$disconnect(); await pool.end(); });
+

@@ -53,7 +53,7 @@ export default function LoginPage() {
 
   const fillCredentials = (cred: string) => {
     setEmail(cred);
-    setPassword('pass123');
+    setPassword('Pass@123#');
     setError('');
   };
 
@@ -210,7 +210,7 @@ export default function LoginPage() {
                   ))}
                 </div>
                 <p className="mt-3 text-center text-xs text-slate-500">
-                  Password: <span className="font-mono text-slate-400">pass123</span>
+                  Password: <span className="font-mono text-slate-400">Pass@123#</span>
                 </p>
               </div>
             </CardContent>

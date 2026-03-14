@@ -66,7 +66,7 @@ async function main() {
 
     // ─── USERS ──────────────────────────────────────────────────────────────────
     console.log("Creating users...");
-    const hashedPass = await bcrypt.hash("pass123", 10);
+    const hashedPass = await bcrypt.hash("Pass@123#", 10);
 
     await prisma.user.upsert({
         where: { email: "admin@floodguard.ke" },
@@ -107,7 +107,7 @@ async function main() {
         },
     });
 
-    console.log("✅ Users created (password: pass123)\n");
+    console.log("✅ Users created (password: Pass@123#)\n");
 
     // ─── NAIROBI LOCATIONS ──────────────────────────────────────────────────────
     console.log("Creating Nairobi flood-prone locations...");
@@ -532,9 +532,9 @@ async function main() {
 
     console.log("🎉 FloodGuard database seeding complete!");
     console.log("\n📋 Login credentials:");
-    console.log("   admin@floodguard.ke     → ADMIN            (pass123)");
-    console.log("   coordinator@redcross.ke → DISASTER_MANAGER (pass123)");
-    console.log("   operator@safaricom.ke   → TELCO_OPERATOR   (pass123)");
+    console.log("   admin@floodguard.ke     → ADMIN            (Pass@123#)");
+    console.log("   coordinator@redcross.ke → DISASTER_MANAGER (Pass@123#)");
+    console.log("   operator@safaricom.ke   → TELCO_OPERATOR   (Pass@123#)");
 }
 
 main()
@@ -545,3 +545,4 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+

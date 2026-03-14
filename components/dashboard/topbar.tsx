@@ -66,6 +66,9 @@ export function DashboardTopbar({
 
   const role = user?.role ?? '';
   const normalizedRole = String(role).toUpperCase();
+  const isAdminUser =
+    normalizedRole === 'ADMIN' &&
+    (user?.email === 'admin@floodguard.ke' || user?.name === 'FloodGuard Admin' || user?.name === 'Admin');
   let fullName = user?.name ?? '';
   if (fullName === 'FloodGuard Admin') fullName = 'Admin';
   if (fullName === 'Safaricom Operator') fullName = 'Safaricom';
@@ -79,6 +82,8 @@ export function DashboardTopbar({
     .join('')
     .slice(0, 2)
     .toUpperCase() || 'U';
+  const avatarLabel = isAdminUser ? 'FloodGuard' : (user?.organizationName ?? fullName ?? 'User');
+  const avatarSrc = isAdminUser ? '/flood-guard-logo.png' : user?.organizationLogoUrl;
 
   useEffect(() => {
     function handleClick(event: MouseEvent) {
@@ -131,8 +136,8 @@ export function DashboardTopbar({
             className="group flex items-center gap-2 pl-1 pr-2 py-1.5 rounded-lg transition-colors hover:bg-slate-800/70"
           >
             <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-orange-500 to-orange-700 shadow-md">
-              {user?.organizationLogoUrl ? (
-                <img src={user.organizationLogoUrl} alt={user.organizationName} className="h-full w-full object-cover" />
+              {avatarSrc ? (
+                <img src={avatarSrc} alt={avatarLabel} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs font-bold tracking-wide text-white">{initials}</div>
               )}
