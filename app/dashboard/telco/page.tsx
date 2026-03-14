@@ -176,7 +176,7 @@ export default function TelcoDashboard() {
     <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 lg:p-8">
       <HeaderMotion className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="mb-2 text-4xl font-bold text-white">Dashboard</h1>
+          <h1 className="mb-2 text-4xl font-bold text-white">Telco Dashboard</h1>
           <p className="text-slate-400">Monitor live SMS operations, queued broadcasts, and field responses in one place.</p>
         </div>
         <LiveBadge
