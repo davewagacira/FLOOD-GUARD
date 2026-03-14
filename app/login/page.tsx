@@ -12,11 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const ROLE_CREDENTIALS = [
   {
-    email: 'admin@floodguard.ke',
-    role: 'Administrator',
-    desc: 'Infrastructure & User Management',
-  },
-  {
     email: 'coordinator@redcross.ke',
     role: 'Disaster Manager',
     desc: 'Flood Monitoring & Response',
@@ -209,9 +204,6 @@ export default function LoginPage() {
                     </button>
                   ))}
                 </div>
-                <p className="mt-3 text-center text-xs text-slate-500">
-                  Password: <span className="font-mono text-slate-400">Pass@123#</span>
-                </p>
               </div>
             </CardContent>
           </Card>

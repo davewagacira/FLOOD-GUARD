@@ -37,7 +37,7 @@ export default function LandingPage() {
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16">
           <div className="space-y-8 text-center md:text-left">
             <div className="space-y-4">
-              <h1 className="text-3xl font-bold leading-tight sm:text-5xl md:text-6xl">
+              <h1 className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
                 Real-time <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">disaster intelligence</span>
               </h1>
               <p className="mx-auto max-w-lg text-lg text-slate-300 sm:text-xl md:mx-0">

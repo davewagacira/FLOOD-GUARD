@@ -382,7 +382,17 @@ async function main() {
     for (const loc of locations) {
         await prisma.location.upsert({
             where: { id: loc.id },
-            update: {},
+            update: {
+                name: loc.name,
+                county: loc.county,
+                subCounty: loc.subCounty,
+                ward: loc.ward,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                population: loc.population,
+                areaKm2: loc.areaKm2,
+                isUrban: loc.isUrban,
+            },
             create: loc as Parameters<typeof prisma.location.create>[0]["data"],
         });
     }
@@ -819,8 +829,18 @@ async function main() {
         await prisma.floodZone.upsert({
             where: { id: zone.id },
             update: {
+                name: zone.name,
+                code: zone.code,
+                locationId: zone.locationId,
+                organizationId: zone.organizationId,
                 riskLevel: zone.riskLevel,
                 drainageScore: zone.drainageScore,
+                riverProximityKm: zone.riverProximityKm,
+                elevationM: zone.elevationM,
+                historicalFloodScore: zone.historicalFloodScore,
+                population: zone.population,
+                polygonCoordinates: zone.polygonCoordinates as Parameters<typeof prisma.floodZone.update>[0]["data"]["polygonCoordinates"],
+                isActive: true,
             },
             create: zone as Parameters<typeof prisma.floodZone.create>[0]["data"],
         });
