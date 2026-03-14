@@ -12,6 +12,7 @@ export async function GET(req: Request) {
 
     const now = new Date();
     const freshSnapshotCutoff = new Date(Date.now() - 90 * 60 * 1000);
+    const freshAssessmentCutoff = new Date(Date.now() - 90 * 60 * 1000);
 
     const zones = await prisma.floodZone.findMany({
         where: { isActive: true },
@@ -31,9 +32,6 @@ export async function GET(req: Request) {
             assessments: {
                 take: 1,
                 orderBy: { assessedAt: "desc" },
-                where: {
-                    expiresAt: { gt: now },
-                },
                 select: {
                     riskScore: true,
                     riskLevel: true,
@@ -41,6 +39,7 @@ export async function GET(req: Request) {
                     riverScore: true,
                     drainageScore: true,
                     assessedAt: true,
+                    expiresAt: true,
                 },
             },
         },
@@ -52,7 +51,6 @@ export async function GET(req: Request) {
             const weatherSnapshot = await prisma.normalizedWeatherSnapshot.findFirst({
                 where: {
                     locationId: zone.location.id,
-                    snapshotAt: { gte: freshSnapshotCutoff },
                 },
                 orderBy: { snapshotAt: "desc" },
                 select: {
@@ -69,8 +67,15 @@ export async function GET(req: Request) {
             return {
                 ...zone,
                 weatherSnapshot: weatherSnapshot ?? null,
-                riskDataFresh: zone.assessments.length > 0,
-                weatherDataFresh: Boolean(weatherSnapshot),
+                riskDataFresh: Boolean(
+                    zone.assessments[0] &&
+                    new Date(zone.assessments[0].assessedAt) >= freshAssessmentCutoff &&
+                    new Date(zone.assessments[0].expiresAt) > now
+                ),
+                weatherDataFresh: Boolean(
+                    weatherSnapshot &&
+                    new Date(weatherSnapshot.snapshotAt) >= freshSnapshotCutoff
+                ),
             };
         })
     );

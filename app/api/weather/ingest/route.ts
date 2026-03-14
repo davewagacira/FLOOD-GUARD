@@ -6,9 +6,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { ingestWeatherForAllLocations } from "@/server/services/weather.service";
 import { requireRole } from "@/lib/server-auth";
 
+function hasValidCronSecret(req: NextRequest) {
+    const authHeader = req.headers.get("authorization");
+    const cronSecret = process.env.CRON_SECRET;
+
+    if (!cronSecret) return false;
+    return authHeader === `Bearer ${cronSecret}`;
+}
+
 export async function POST(req: NextRequest) {
-    const auth = await requireRole(req, ["ADMIN"]);
-    if (auth.error) return auth.error;
+    const isCronRequest = hasValidCronSecret(req);
+    if (!isCronRequest) {
+        const auth = await requireRole(req, ["ADMIN"]);
+        if (auth.error) return auth.error;
+    }
 
     try {
         console.log("[WeatherIngest] Starting ingestion...");

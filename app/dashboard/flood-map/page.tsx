@@ -107,7 +107,7 @@ export default function FloodMapPage() {
   const fetchZones = useCallback(async () => {
     setLoadError(null);
     try {
-      const r = await fetch('/api/flood-zones/map');
+      const r = await fetch('/api/flood-zones/map', { cache: 'no-store' });
       if (!r.ok) {
         const message = r.status === 401 || r.status === 403
           ? 'Your session does not have access to live flood intelligence.'
@@ -115,6 +115,7 @@ export default function FloodMapPage() {
         throw new Error(message);
       }
       setZones(await r.json());
+      setLastUpdate(new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }));
     } catch (error) {
       setZones([]);
       setLoadError(error instanceof Error ? error.message : 'Unable to load flood intelligence.');
@@ -216,6 +217,14 @@ export default function FloodMapPage() {
         try { await loadGoogleMaps(API_KEY); setMapsReady(true); } catch (e) { console.error(e); }
       }
     })();
+  }, [fetchZones]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchZones().catch(() => undefined);
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, [fetchZones]);
 
   /* â”€â”€ When a zone is selected, load nearby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
