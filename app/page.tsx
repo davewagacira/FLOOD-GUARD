@@ -16,7 +16,7 @@ export default function LandingPage() {
     <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
       <Header />
 
-      <section className="relative flex min-h-[88svh] items-start pt-20 md:min-h-screen md:items-center md:pt-20">
+      <section className="relative flex min-h-[88svh] items-center pt-16 md:min-h-screen md:items-center md:pt-20">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl" />
           <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
@@ -34,7 +34,7 @@ export default function LandingPage() {
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 to-transparent" />
         </div>
 
-        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 py-4 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16">
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16">
           <div className="space-y-8 text-center md:text-left">
             <div className="space-y-4">
               <h1 className="text-3xl font-bold leading-tight sm:text-5xl md:text-6xl">
