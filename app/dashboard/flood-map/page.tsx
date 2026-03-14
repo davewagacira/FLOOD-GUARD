@@ -680,8 +680,8 @@ export default function FloodMapPage() {
                   {activeTab === 'nearby' && (
                     <div>
                       <div className="mb-3 rounded-xl border border-slate-800/70 bg-slate-900/60 p-3">
-                        <p className="text-xs font-semibold text-white">Authoritative nearby infrastructure</p>
-                        <p className="mt-1 text-xs text-slate-400">This panel uses verified shelters, safe zones, hospitals, and rescue resources from the Flood Guard database.</p>
+                        <p className="text-xs font-semibold text-white">Nearby infrastructure and response points</p>
+                        <p className="mt-1 text-xs text-slate-400">This panel prioritizes live Google Places results and falls back to verified Flood Guard infrastructure if needed.</p>
                       </div>
                       {nearbyLoading ? (
                         <div className="flex items-center justify-center py-8 gap-2 text-slate-500">
@@ -689,7 +689,7 @@ export default function FloodMapPage() {
                           <span className="text-sm">Searching within 5km...</span>
                         </div>
                       ) : nearby.length === 0 ? (
-                        <p className="text-center py-8 text-slate-500 text-sm">No nearby infrastructure found</p>
+                        <p className="text-center py-8 text-slate-500 text-sm">No nearby infrastructure found yet for this zone.</p>
                       ) : (
                         <div className="space-y-4">
                           {nearby.filter(g => g.places.length > 0).map(group => (
