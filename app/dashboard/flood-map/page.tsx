@@ -31,6 +31,21 @@ interface Zone {
 
 interface NearbyPlace { id: string; name: string; address: string; rating: number | null; lat: number; lng: number; open: boolean | null; }
 interface NearbyGroup { type: string; label: string; emoji: string; places: NearbyPlace[] }
+interface AiZoneSummary {
+  zoneId: string;
+  zoneName: string;
+  generatedAt: string;
+  summary: string;
+  recommendations: string[];
+  confidence: number;
+  context: {
+    riskLevel: string;
+    riskScore: number | null;
+    precipitationIntensity: number | null;
+    weatherSnapshotAt: string | null;
+    assessedAt: string | null;
+  };
+}
 
 /* â”€â”€ Risk config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const RISK = {
@@ -76,7 +91,9 @@ export default function FloodMapPage() {
   const { user } = useAuth();
   const normalizedRole = String(user?.role ?? '').toUpperCase();
   const isAdmin = normalizedRole === 'ADMIN';
-  const canRefreshZoneWeather = isAdmin || normalizedRole === 'DISASTER_MANAGER';
+  const isDisasterManager = normalizedRole === 'DISASTER_MANAGER' || normalizedRole === 'NGO';
+  const canRefreshZoneWeather = isAdmin || isDisasterManager;
+  const canViewAiSummary = isAdmin || isDisasterManager;
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
@@ -98,10 +115,14 @@ export default function FloodMapPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'details' | 'weather' | 'nearby' | 'admin'>('details');
+  const [aiSummaryByZone, setAiSummaryByZone] = useState<Record<string, AiZoneSummary>>({});
+  const [aiSummaryLoading, setAiSummaryLoading] = useState<string | null>(null);
+  const [aiSummaryError, setAiSummaryError] = useState<string | null>(null);
 
   const [newPolygonCoords, setNewPolygonCoords] = useState<{ lat: number, lng: number }[] | null>(null);
   const [savingZone, setSavingZone] = useState(false);
   const [newZoneForm, setNewZoneForm] = useState({ name: '', code: '', county: '', population: '' });
+  const selectedAiSummary = selected ? aiSummaryByZone[selected.id] : undefined;
 
   /* â”€â”€ Fetch all zones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   const fetchZones = useCallback(async () => {
@@ -174,6 +195,34 @@ export default function FloodMapPage() {
     } finally { setNearbyLoading(false); }
   }, []);
 
+  const fetchAiSummary = useCallback(async (zoneId: string, force = false) => {
+    if (!canViewAiSummary) return;
+    if (!force && aiSummaryByZone[zoneId]) return;
+
+    setAiSummaryLoading(zoneId);
+    setAiSummaryError(null);
+
+    try {
+      const response = await fetch(`/api/flood-zones/${zoneId}/ai-summary`, {
+        cache: 'no-store',
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'AI summary is unavailable for this flood zone.');
+      }
+
+      setAiSummaryByZone((current) => ({
+        ...current,
+        [zoneId]: payload as AiZoneSummary,
+      }));
+    } catch (error) {
+      setAiSummaryError(error instanceof Error ? error.message : 'Unable to generate AI risk brief.');
+    } finally {
+      setAiSummaryLoading((current) => (current === zoneId ? null : current));
+    }
+  }, [aiSummaryByZone, canViewAiSummary]);
+
   const saveNewZone = async () => {
     if (!newPolygonCoords) return;
     setSavingZone(true);
@@ -229,9 +278,14 @@ export default function FloodMapPage() {
 
   /* â”€â”€ When a zone is selected, load nearby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   useEffect(() => {
-    if (selected) { setActiveTab('details'); fetchNearby(selected.id); }
+    if (selected) {
+      setActiveTab('details');
+      fetchNearby(selected.id);
+      fetchAiSummary(selected.id).catch(() => undefined);
+      setAiSummaryError(null);
+    }
     else setNearby([]);
-  }, [selected, fetchNearby]);
+  }, [selected, fetchAiSummary, fetchNearby]);
 
   /* â”€â”€ Draw map + overlays â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   useEffect(() => {
@@ -584,40 +638,144 @@ export default function FloodMapPage() {
 
                   {/* Details tab */}
                   {activeTab === 'details' && (
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { label: 'Population', value: (selected.population || selected.location.population || 0).toLocaleString(), color: 'text-blue-400', icon: <Users className="w-4 h-4" /> },
-                        { label: 'River Proximity', value: selected.riverProximityKm ? `${selected.riverProximityKm} km` : '-', color: 'text-cyan-400', icon: <Droplets className="w-4 h-4" /> },
-                        { label: 'Drainage Score', value: `${selected.drainageScore}/100`, color: 'text-yellow-400', icon: <Activity className="w-4 h-4" /> },
-                        { label: 'Historical Risk', value: `${selected.historicalFloodScore}/100`, color: 'text-red-400', icon: <AlertTriangle className="w-4 h-4" /> },
-                        { label: 'Elevation', value: selected.elevationM ? `${selected.elevationM}m` : '-', color: 'text-green-400', icon: <MapPin className="w-4 h-4" /> },
-                        { label: 'Risk Score', value: selected.assessments[0] ? `${selected.assessments[0].riskScore.toFixed(1)}/100` : 'None', color: 'text-orange-400', icon: <Zap className="w-4 h-4" /> },
-                        { label: 'Risk Data', value: selected.riskDataFresh ? 'Fresh' : 'Stale', color: selected.riskDataFresh ? 'text-green-400' : 'text-amber-400', icon: <Activity className="w-4 h-4" /> },
-                        { label: 'County', value: selected.location.county, color: 'text-slate-300', icon: <MapPin className="w-4 h-4" /> },
-                        { label: 'Status', value: selected.isActive ? 'Active' : 'Inactive', color: selected.isActive ? 'text-green-400' : 'text-slate-500', icon: <Shield className="w-4 h-4" /> },
-                      ].map(d => (
-                        <div key={d.label} className="bg-slate-800/40 rounded-xl p-3">
-                          <div className={`flex items-center gap-1.5 mb-1 ${d.color}`}>{d.icon}<p className="text-xs text-slate-500">{d.label}</p></div>
-                          <p className={`text-base font-bold ${d.color}`}>{d.value}</p>
-                        </div>
-                      ))}
-                      {selected.assessments[0] && (
-                        <div className="col-span-2 bg-slate-800/40 rounded-xl p-3">
-                          <p className="text-xs text-slate-400 mb-2 font-semibold">Risk Score Breakdown</p>
-                          {[
-                            { label: 'Rainfall', value: selected.assessments[0].rainfallScore ?? 0, color: 'bg-blue-500' },
-                            { label: 'River', value: selected.assessments[0].riverScore ?? 0, color: 'bg-cyan-500' },
-                            { label: 'Drainage', value: selected.assessments[0].drainageScore ?? 0, color: 'bg-yellow-500' },
-                          ].map(b => (
-                            <div key={b.label} className="mb-2">
-                              <div className="flex justify-between text-xs text-slate-500 mb-1"><span>{b.label}</span><span>{b.value.toFixed(1)}</span></div>
-                              <div className="w-full bg-slate-700/40 rounded-full h-1.5">
-                                <div className={`${b.color} h-1.5 rounded-full transition-all`} style={{ width: `${Math.min(100, b.value)}%` }} />
-                              </div>
+                    <div className="space-y-3">
+                      {canViewAiSummary && (
+                        <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/10 via-slate-900/95 to-slate-900/95 p-4 sm:p-5">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-300/80">AI Risk Brief</p>
+                              <p className="mt-1 text-sm text-slate-300">Operational summary for flood-response coordination.</p>
                             </div>
-                          ))}
+                            <button
+                              onClick={() => fetchAiSummary(selected.id, true)}
+                              disabled={aiSummaryLoading === selected.id}
+                              className="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-[11px] font-semibold text-orange-300 transition hover:bg-orange-500/20 disabled:opacity-60 sm:w-auto"
+                            >
+                              <RefreshCw className={`h-3 w-3 ${aiSummaryLoading === selected.id ? 'animate-spin' : ''}`} />
+                              Refresh
+                            </button>
+                          </div>
+
+                          {aiSummaryLoading === selected.id && !selectedAiSummary ? (
+                            <div className="mt-4 flex items-center gap-2 text-sm text-slate-300">
+                              <Loader2 className="h-4 w-4 animate-spin text-orange-400" />
+                              Preparing AI risk brief...
+                            </div>
+                          ) : selectedAiSummary ? (
+                            <div className="mt-4 space-y-3">
+                              <div className="rounded-xl border border-slate-800/70 bg-slate-950/50 p-3">
+                                <p className="text-sm leading-6 text-slate-100">{selectedAiSummary.summary}</p>
+                              </div>
+                              <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                                <div className="grid min-h-[100px] grid-rows-[auto_1fr] rounded-xl bg-slate-900/70 p-3 md:min-w-0">
+                                  <div>
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Confidence</p>
+                                  </div>
+                                  <div className="flex items-end">
+                                    <div>
+                                      <p className="text-lg font-semibold leading-none text-white">{(selectedAiSummary.confidence * 100).toFixed(0)}%</p>
+                                      <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-transparent select-none">mm/hr</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="grid min-h-[100px] grid-rows-[auto_1fr] rounded-xl bg-slate-900/70 p-3 md:min-w-0">
+                                  <div>
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Risk score</p>
+                                  </div>
+                                  <div className="flex items-end">
+                                    <div>
+                                      <p className="text-lg font-semibold leading-none text-white">
+                                        {selectedAiSummary.context.riskScore !== null
+                                          ? selectedAiSummary.context.riskScore.toFixed(1)
+                                          : 'N/A'}
+                                      </p>
+                                      <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-transparent select-none">mm/hr</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="grid min-h-[100px] grid-rows-[auto_1fr] rounded-xl bg-slate-900/70 p-3 md:min-w-0">
+                                  <div>
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Rain intensity</p>
+                                  </div>
+                                  <div className="flex items-end">
+                                    {selectedAiSummary.context.precipitationIntensity !== null ? (
+                                      <div>
+                                        <p className="text-lg font-semibold leading-none text-white">
+                                          {selectedAiSummary.context.precipitationIntensity.toFixed(1)}
+                                        </p>
+                                        <p className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-slate-400">mm/hr</p>
+                                      </div>
+                                    ) : (
+                                      <p className="text-lg font-semibold leading-none text-white">N/A</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="rounded-xl border border-slate-800/70 bg-slate-950/40 p-3">
+                                <p className="text-xs font-semibold text-slate-300">Recommended actions</p>
+                                <div className="mt-2 space-y-2">
+                                  {selectedAiSummary.recommendations.map((recommendation, index) => (
+                                    <div key={`${selected.id}-${index}`} className="flex items-start gap-2 text-sm leading-6 text-slate-300">
+                                      <div className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-orange-400" />
+                                      <p>{recommendation}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-[11px] text-slate-500">
+                                Generated {new Date(selectedAiSummary.generatedAt).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}.
+                                Use this as decision support and keep human approval in the loop.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="mt-4 rounded-xl border border-slate-800/70 bg-slate-950/40 p-3 text-sm text-slate-400">
+                              Select refresh to generate an AI risk brief for this flood zone.
+                            </div>
+                          )}
+
+                          {aiSummaryError && (
+                            <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300">
+                              {aiSummaryError}
+                            </div>
+                          )}
                         </div>
                       )}
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {[
+                          { label: 'Population', value: (selected.population || selected.location.population || 0).toLocaleString(), color: 'text-blue-400', icon: <Users className="w-4 h-4" /> },
+                          { label: 'River Proximity', value: selected.riverProximityKm ? `${selected.riverProximityKm} km` : '-', color: 'text-cyan-400', icon: <Droplets className="w-4 h-4" /> },
+                          { label: 'Drainage Score', value: `${selected.drainageScore}/100`, color: 'text-yellow-400', icon: <Activity className="w-4 h-4" /> },
+                          { label: 'Historical Risk', value: `${selected.historicalFloodScore}/100`, color: 'text-red-400', icon: <AlertTriangle className="w-4 h-4" /> },
+                          { label: 'Elevation', value: selected.elevationM ? `${selected.elevationM}m` : '-', color: 'text-green-400', icon: <MapPin className="w-4 h-4" /> },
+                          { label: 'Risk Score', value: selected.assessments[0] ? `${selected.assessments[0].riskScore.toFixed(1)}/100` : 'None', color: 'text-orange-400', icon: <Zap className="w-4 h-4" /> },
+                          { label: 'Risk Data', value: selected.riskDataFresh ? 'Fresh' : 'Stale', color: selected.riskDataFresh ? 'text-green-400' : 'text-amber-400', icon: <Activity className="w-4 h-4" /> },
+                          { label: 'County', value: selected.location.county, color: 'text-slate-300', icon: <MapPin className="w-4 h-4" /> },
+                          { label: 'Status', value: selected.isActive ? 'Active' : 'Inactive', color: selected.isActive ? 'text-green-400' : 'text-slate-500', icon: <Shield className="w-4 h-4" /> },
+                        ].map(d => (
+                          <div key={d.label} className="bg-slate-800/40 rounded-xl p-3">
+                            <div className={`flex items-center gap-1.5 mb-1 ${d.color}`}>{d.icon}<p className="text-xs text-slate-500">{d.label}</p></div>
+                            <p className={`text-base font-bold ${d.color}`}>{d.value}</p>
+                          </div>
+                        ))}
+                        {selected.assessments[0] && (
+                          <div className="bg-slate-800/40 rounded-xl p-3 sm:col-span-2">
+                            <p className="text-xs text-slate-400 mb-2 font-semibold">Risk Score Breakdown</p>
+                            {[
+                              { label: 'Rainfall', value: selected.assessments[0].rainfallScore ?? 0, color: 'bg-blue-500' },
+                              { label: 'River', value: selected.assessments[0].riverScore ?? 0, color: 'bg-cyan-500' },
+                              { label: 'Drainage', value: selected.assessments[0].drainageScore ?? 0, color: 'bg-yellow-500' },
+                            ].map(b => (
+                              <div key={b.label} className="mb-2">
+                                <div className="flex justify-between text-xs text-slate-500 mb-1"><span>{b.label}</span><span>{b.value.toFixed(1)}</span></div>
+                                <div className="w-full bg-slate-700/40 rounded-full h-1.5">
+                                  <div className={`${b.color} h-1.5 rounded-full transition-all`} style={{ width: `${Math.min(100, b.value)}%` }} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 

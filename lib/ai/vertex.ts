@@ -86,7 +86,11 @@ Respond in JSON with this exact structure:
   "confidence": 0.85
 }
 
-Keep it concise, factual, and actionable. Focus on immediate actions for Nairobi flood responders.`;
+Keep it concise, factual, and actionable. Focus on immediate actions for Nairobi flood responders.
+Recommendations should match responder responsibilities:
+- disaster managers coordinate field response, shelters, public safety actions, and escalation
+- telco broadcasts are handled by telecommunications partners, so say "coordinate with telco partners" instead of telling responders to send SMS directly
+- do not assign actions outside the emergency coordination role unless phrased as coordination with the responsible partner.`;
 
     try {
         const result = await model.generateContent(prompt);
@@ -99,7 +103,7 @@ Keep it concise, factual, and actionable. Focus on immediate actions for Nairobi
             recommendations: [
                 "Monitor river levels and rainfall continuously",
                 "Pre-position rescue resources in nearby staging areas",
-                "Alert residents via SMS if risk increases",
+                "Coordinate with telco partners to prepare resident alerts if risk increases",
             ],
             confidence: 0.5,
         };
