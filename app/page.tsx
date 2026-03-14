@@ -16,7 +16,7 @@ export default function LandingPage() {
     <div className="min-h-screen overflow-hidden bg-slate-950 text-white">
       <Header />
 
-      <section className="relative flex min-h-[88svh] items-start pt-8 md:min-h-screen md:items-center md:pt-20">
+      <section className="relative flex min-h-[88svh] items-start pt-20 md:min-h-screen md:items-center md:pt-20">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-orange-500/10 blur-3xl" />
           <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
@@ -34,10 +34,10 @@ export default function LandingPage() {
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 to-transparent" />
         </div>
 
-        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 py-6 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16">
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-4 py-4 sm:px-6 md:grid-cols-2 md:gap-12 md:py-16">
           <div className="space-y-8 text-center md:text-left">
             <div className="space-y-4">
-              <h1 className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
+              <h1 className="text-3xl font-bold leading-tight sm:text-5xl md:text-6xl">
                 Real-time <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">disaster intelligence</span>
               </h1>
               <p className="mx-auto max-w-lg text-lg text-slate-300 sm:text-xl md:mx-0">
@@ -234,7 +234,7 @@ export default function LandingPage() {
               className="ml-1 cursor-pointer"
             >
               <span className="bg-gradient-to-r from-red-600 to-blue-500 bg-clip-text text-sm font-bold text-transparent transition-colors hover:from-red-500 hover:to-blue-400">
-                CodeVerse
+                Syndicate
               </span>
             </a>
           </div>

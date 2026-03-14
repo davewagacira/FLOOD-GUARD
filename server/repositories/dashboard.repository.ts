@@ -281,11 +281,13 @@ export async function getTelcoDashboardMetrics() {
             },
         }),
 
-        // Pending alert approvals
+        // Telco queue:
+        // - PENDING_APPROVAL alerts still need admin action
+        // - APPROVED alerts are ready for the telco operator to trigger
         prisma.alert.findMany({
-            where: { status: "PENDING_APPROVAL" },
-            take: 10,
-            orderBy: { createdAt: "desc" },
+            where: { status: { in: ["PENDING_APPROVAL", "APPROVED"] } },
+            take: 12,
+            orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
             include: { location: true, organization: true },
         }),
 
@@ -333,13 +335,17 @@ export async function getTelcoDashboardMetrics() {
             ? Math.round((smsDeliveredToday / smsSentToday) * 1000) / 10
             : 0;
 
+    const pendingApprovalsCount = pendingAlerts.filter((alert) => alert.status === "PENDING_APPROVAL").length;
+    const readyForBroadcastCount = pendingAlerts.filter((alert) => alert.status === "APPROVED").length;
+
     return {
         metrics: {
             smsSentToday,
             smsDeliveredToday,
             smsFailedToday,
             deliveryRate,
-            pendingApprovalsCount: pendingAlerts.length,
+            pendingApprovalsCount,
+            readyForBroadcastCount,
         },
         pendingAlerts,
         recentBroadcasts,
