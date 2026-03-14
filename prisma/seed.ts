@@ -121,7 +121,7 @@ async function main() {
             ward: "Kibera",
             latitude: -1.3133,
             longitude: 36.7872,
-            population: 250000,
+            population: 408000,
             areaKm2: 2.5,
             isUrban: true,
         },
@@ -133,7 +133,7 @@ async function main() {
             ward: "Mathare North",
             latitude: -1.2627,
             longitude: 36.8598,
-            population: 160000,
+            population: 180000,
             areaKm2: 1.8,
             isUrban: true,
         },
@@ -157,7 +157,7 @@ async function main() {
             ward: "Kawangware",
             latitude: -1.2779,
             longitude: 36.7483,
-            population: 130000,
+            population: 661885,
             areaKm2: 2.8,
             isUrban: true,
         },
@@ -169,7 +169,7 @@ async function main() {
             ward: "Embakasi",
             latitude: -1.3229,
             longitude: 36.9065,
-            population: 145000,
+            population: 925775,
             areaKm2: 6.5,
             isUrban: true,
         },
@@ -181,7 +181,7 @@ async function main() {
             ward: "Korogocho",
             latitude: -1.2332,
             longitude: 36.8952,
-            population: 100000,
+            population: 175000,
             areaKm2: 1.5,
             isUrban: true,
         },
@@ -193,7 +193,7 @@ async function main() {
             ward: "Ruiru",
             latitude: -1.1465,
             longitude: 36.9608,
-            population: 85000,
+            population: 371111,
             areaKm2: 12.0,
             isUrban: false,
         },
@@ -205,7 +205,7 @@ async function main() {
             ward: "Athi River",
             latitude: -1.4542,
             longitude: 36.9824,
-            population: 70000,
+            population: 24530,
             areaKm2: 15.0,
             isUrban: false,
         },
@@ -229,7 +229,7 @@ async function main() {
             ward: "Njiru",
             latitude: -1.2512,
             longitude: 36.9842,
-            population: 78000,
+            population: 626482,
             areaKm2: 10.5,
             isUrban: false,
         },
@@ -241,7 +241,7 @@ async function main() {
             ward: "Ruai",
             latitude: -1.2456,
             longitude: 37.0054,
-            population: 92000,
+            population: 72134,
             areaKm2: 14.2,
             isUrban: false,
         },
@@ -253,7 +253,7 @@ async function main() {
             ward: "Dandora Area",
             latitude: -1.2397,
             longitude: 36.8984,
-            population: 135000,
+            population: 150000,
             areaKm2: 5.4,
             isUrban: true,
         },
@@ -265,7 +265,7 @@ async function main() {
             ward: "Eastleigh South",
             latitude: -1.2674,
             longitude: 36.8619,
-            population: 68000,
+            population: 45000,
             areaKm2: 2.0,
             isUrban: true,
         },
@@ -277,7 +277,7 @@ async function main() {
             ward: "Karura",
             latitude: -1.2298,
             longitude: 36.8126,
-            population: 42000,
+            population: 20000,
             areaKm2: 1.2,
             isUrban: true,
         },
@@ -289,7 +289,7 @@ async function main() {
             ward: "Kangemi",
             latitude: -1.2682,
             longitude: 36.7448,
-            population: 98000,
+            population: 100000,
             areaKm2: 3.1,
             isUrban: true,
         },
@@ -301,7 +301,7 @@ async function main() {
             ward: "Kangemi",
             latitude: -1.2712,
             longitude: 36.7708,
-            population: 36000,
+            population: 15000,
             areaKm2: 1.6,
             isUrban: true,
         },
@@ -313,7 +313,7 @@ async function main() {
             ward: "Pumwani",
             latitude: -1.2845,
             longitude: 36.8502,
-            population: 52000,
+            population: 25000,
             areaKm2: 1.9,
             isUrban: true,
         },
@@ -325,7 +325,7 @@ async function main() {
             ward: "Highrise",
             latitude: -1.3084,
             longitude: 36.8046,
-            population: 76000,
+            population: 50000,
             areaKm2: 2.4,
             isUrban: true,
         },
@@ -337,7 +337,7 @@ async function main() {
             ward: "Zimmerman",
             latitude: -1.2184,
             longitude: 36.8835,
-            population: 87000,
+            population: 49533,
             areaKm2: 3.7,
             isUrban: true,
         },
@@ -349,7 +349,7 @@ async function main() {
             ward: "Kahawa West",
             latitude: -1.1838,
             longitude: 36.9342,
-            population: 110000,
+            population: 100000,
             areaKm2: 6.0,
             isUrban: true,
         },
@@ -361,7 +361,7 @@ async function main() {
             ward: "Umoja I",
             latitude: -1.2841,
             longitude: 36.9138,
-            population: 125000,
+            population: 150000,
             areaKm2: 6.8,
             isUrban: true,
         },
@@ -373,7 +373,7 @@ async function main() {
             ward: "Mihango",
             latitude: -1.2849,
             longitude: 36.9575,
-            population: 118000,
+            population: 50000,
             areaKm2: 9.1,
             isUrban: true,
         },
@@ -404,7 +404,7 @@ async function main() {
             riverProximityKm: 0.2,    // near Nairobi River
             elevationM: 1671,
             historicalFloodScore: 90, // frequently floods
-            population: 250000,
+            population: 408000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -424,7 +424,7 @@ async function main() {
             riverProximityKm: 0.1,   // on Mathare River
             elevationM: 1590,
             historicalFloodScore: 85,
-            population: 160000,
+            population: 180000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -464,7 +464,7 @@ async function main() {
             riverProximityKm: 1.2,
             elevationM: 1700,
             historicalFloodScore: 55,
-            population: 130000,
+            population: 661885,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -484,7 +484,7 @@ async function main() {
             riverProximityKm: 0.5,
             elevationM: 1545,
             historicalFloodScore: 70,
-            population: 145000,
+            population: 925775,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -504,7 +504,7 @@ async function main() {
             riverProximityKm: 0.15,
             elevationM: 1580,
             historicalFloodScore: 78,
-            population: 100000,
+            population: 175000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -524,7 +524,7 @@ async function main() {
             riverProximityKm: 0.8,
             elevationM: 1503,
             historicalFloodScore: 45,
-            population: 85000,
+            population: 371111,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -544,7 +544,7 @@ async function main() {
             riverProximityKm: 0.1,  // on Athi River
             elevationM: 1484,
             historicalFloodScore: 60,
-            population: 70000,
+            population: 24530,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -564,7 +564,7 @@ async function main() {
             riverProximityKm: 0.4,
             elevationM: 1540,
             historicalFloodScore: 72,
-            population: 78000,
+            population: 626482,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -584,7 +584,7 @@ async function main() {
             riverProximityKm: 0.3,
             elevationM: 1532,
             historicalFloodScore: 70,
-            population: 92000,
+            population: 72134,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -604,7 +604,7 @@ async function main() {
             riverProximityKm: 0.2,
             elevationM: 1594,
             historicalFloodScore: 76,
-            population: 135000,
+            population: 150000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -624,7 +624,7 @@ async function main() {
             riverProximityKm: 0.3,
             elevationM: 1610,
             historicalFloodScore: 74,
-            population: 68000,
+            population: 45000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -644,7 +644,7 @@ async function main() {
             riverProximityKm: 0.2,
             elevationM: 1678,
             historicalFloodScore: 58,
-            population: 42000,
+            population: 20000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -664,7 +664,7 @@ async function main() {
             riverProximityKm: 0.2,
             elevationM: 1672,
             historicalFloodScore: 68,
-            population: 98000,
+            population: 100000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -684,7 +684,7 @@ async function main() {
             riverProximityKm: 0.1,
             elevationM: 1658,
             historicalFloodScore: 62,
-            population: 36000,
+            population: 15000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -704,7 +704,7 @@ async function main() {
             riverProximityKm: 0.1,
             elevationM: 1620,
             historicalFloodScore: 71,
-            population: 52000,
+            population: 25000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -724,7 +724,7 @@ async function main() {
             riverProximityKm: 0.5,
             elevationM: 1654,
             historicalFloodScore: 57,
-            population: 76000,
+            population: 50000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -744,7 +744,7 @@ async function main() {
             riverProximityKm: 0.6,
             elevationM: 1605,
             historicalFloodScore: 53,
-            population: 87000,
+            population: 49533,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -764,7 +764,7 @@ async function main() {
             riverProximityKm: 0.5,
             elevationM: 1564,
             historicalFloodScore: 56,
-            population: 110000,
+            population: 100000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -784,7 +784,7 @@ async function main() {
             riverProximityKm: 0.4,
             elevationM: 1616,
             historicalFloodScore: 66,
-            population: 125000,
+            population: 150000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
@@ -804,7 +804,7 @@ async function main() {
             riverProximityKm: 0.7,
             elevationM: 1602,
             historicalFloodScore: 52,
-            population: 118000,
+            population: 50000,
             polygonCoordinates: {
                 type: "Polygon",
                 coordinates: [[
