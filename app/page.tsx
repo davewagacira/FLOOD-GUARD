@@ -204,7 +204,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="relative border-t border-slate-800 py-20">
+      <section className="relative overflow-hidden border-t border-slate-800 py-20">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute left-1/4 top-0 h-80 w-80 rounded-full bg-orange-500/10 blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl" />
+        </div>
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
           <h2 className="mb-6 text-3xl font-bold sm:text-4xl">Ready to save lives with FloodGuard?</h2>
           <p className="mb-8 text-lg text-slate-400 sm:text-xl">
@@ -218,7 +222,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-slate-800 px-4 py-8 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 text-center text-slate-400">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 text-center text-slate-400 md:flex-row md:justify-between md:text-left">
           <p>&copy; {currentYear} FloodGuard. All rights reserved.</p>
           <div className="flex items-center justify-center text-slate-400">
             <Code className="mr-2 h-4 w-4 text-red-600" />
