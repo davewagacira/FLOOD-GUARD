@@ -565,7 +565,7 @@ export default function FloodMapPage() {
               id="region-selector"
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-orange-500/40"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 pr-10 text-sm text-white outline-none transition-colors focus:border-orange-500/40"
             >
               <option value="nairobi">Nairobi</option>
             </select>
@@ -607,7 +607,7 @@ export default function FloodMapPage() {
         {[
           { label: 'Critical', value: critical, color: 'text-red-400', icon: <AlertTriangle className="w-4 h-4" /> },
           { label: 'High Risk', value: high, color: 'text-orange-400', icon: <Activity className="w-4 h-4" /> },
-          { label: 'Population at Risk', value: totalPop > 0 ? compactNumber.format(totalPop) : '-', color: 'text-blue-400', icon: <Users className="w-4 h-4" /> },
+          { label: 'Population Monitored', value: totalPop > 0 ? compactNumber.format(totalPop) : '-', color: 'text-blue-400', icon: <Users className="w-4 h-4" /> },
           { label: 'Avg Risk Score', value: avgScore ?? 'No data', color: 'text-yellow-400', icon: <Zap className="w-4 h-4" /> },
         ].map(s => (
           <div key={s.label} className="flex items-center gap-3 border-r border-slate-800/60 px-4 py-3 last:border-r-0 sm:px-6">
