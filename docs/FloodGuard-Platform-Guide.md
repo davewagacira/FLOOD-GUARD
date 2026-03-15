@@ -126,7 +126,7 @@ The platform currently uses:
 - Tomorrow.io
 - OpenWeather
 
-This allows the system to observe rainfall and zone-level weather conditions in near real time.
+This allows the system to observe rainfall, near-term forecast windows, provider agreement, and zone-level weather conditions in near real time.
 
 ### Step 3: Flood risk is assessed
 
@@ -134,8 +134,11 @@ FloodGuard evaluates the incoming weather data against the conditions of each fl
 
 The system uses:
 
-- recent weather conditions
-- zone risk configuration
+- current rainfall conditions
+- recent rainfall accumulation windows
+- near-term forecast rainfall
+- zone-specific flood thresholds
+- provider reliability and operational confidence
 - prior assessments
 - flood-risk scoring logic
 
@@ -593,6 +596,7 @@ What this page is used for:
 - creating incidents
 - viewing incident details
 - updating status
+- capturing ground-truth verification and flood impact notes
 - coordinating shared operational awareness with admin
 
 Why it matters:
@@ -688,8 +692,9 @@ Recommended wrap-up:
 1. resolve incidents
 2. resolve or archive distress cases
 3. return rescue resources to available status
-4. review health, delivery, and operational logs
-5. update flood-zone intelligence where needed
+4. review provider health, delivery, and operational logs
+5. capture verified flood ground truth and field observations
+6. review backtesting results and recalibrate zone thresholds where needed
 
 ---
 
@@ -774,3 +779,5 @@ This document can be used for:
 - preparing operations handover notes
 
 For best results, walk each team through only the pages they own first, then show how the roles connect in the full emergency lifecycle.
+
+

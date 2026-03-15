@@ -33,9 +33,9 @@ FloodGuard connects the full chain:
 
 ### 1. It is built for the real Nairobi flood context
 
-FloodGuard is built around actual Nairobi and metro flood corridors, including Kibera, Mathare, Mukuru, Korogocho, Embakasi, Njiru, Ruai, Dandora, Kangemi, Githogoro, Kahawa-Githurai, Donholm-Umoja-Chokaa, and more.
+FloodGuard is built around actual Nairobi and metro flood corridors, including Kibera, Mathare, Mukuru, Korogocho, Embakasi, Njiru, Ruai, Dandora, Kangemi, Githogoro, Kahawa-Githurai, Donholm-Umoja-Chokaa, Westlands-Parklands, and more.
 
-We already monitor 21 flood zones across Nairobi and the wider metro risk belt.
+We already monitor 22 flood zones across Nairobi and the wider metro risk belt.
 
 ### 2. It combines prediction, communication, and response in one workflow
 
@@ -185,13 +185,15 @@ That is the difference between a clever app and a deployable civic technology pl
 - admin, disaster manager, and telco role separation
 - SMS approval and dispatch workflow
 - distress-signal visibility for field response
-- near-production full-stack architecture
+- production-oriented full-stack architecture with hourly weather ingestion, provider health tracking, calibrated flood thresholds, and incident feedback capture
 
 ## Our Next Strategic Expansion
 
 FloodGuard can grow beyond the current platform by:
 
-- adding omitted high-risk corridors such as Huruma, Pipeline, Mukuru Kwa Reuben, Mukuru Viwandani, South B, Kariobangi-Baba Dogo, Lang'ata-Nairobi West, Westlands-Parklands, Kilimani-Loresho, and Lucky Summer-Kamulu
+- adding omitted high-risk corridors such as Huruma, Pipeline, Mukuru Kwa Reuben, Mukuru Viwandani, South B, Kariobangi-Baba Dogo, Lang'ata-Nairobi West, Kilimani-Loresho, and Lucky Summer-Kamulu
+- backtesting the model against verified incident records to improve zone-level calibration and lead time
+- integrating provider health dashboards and operator-facing calibration workflows into daily operations
 - deepening exposed-population modeling using GIS overlays instead of static estimates
 - integrating more formal emergency dispatch routing
 - supporting multilingual public alerts
@@ -208,3 +210,5 @@ shared, actionable, real-time coordination.
 That is why FloodGuard stands out.
 That is why it is partnership-worthy.
 And that is why it can help save lives.
+
+

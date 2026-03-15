@@ -38,7 +38,7 @@
     "crons": [
         {
             "path": "/api/weather/ingest",
-            "schedule": "0 * * * *"
+            "schedule": "0 5 * * *"
         }
     ]
 }
