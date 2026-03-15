@@ -48,7 +48,7 @@ interface DeliveryReportsPayload {
 function getHealthCheckLabel(service: string) {
   switch (service) {
     case 'sms_gateway':
-      return 'Safaricom Secure API';
+      return 'Red Cross SMS API';
     case 'database':
       return 'Secure Messaging Database';
     default:
@@ -58,7 +58,7 @@ function getHealthCheckLabel(service: string) {
 
 function getHealthCheckMessage(healthCheck: HealthCheck) {
   if (healthCheck.service === 'sms_gateway') {
-    return 'Safaricom Secure API connected';
+    return 'Red Cross SMS API connected';
   }
   return healthCheck.message ?? 'No additional message';
 }
@@ -137,7 +137,7 @@ export default function DeliveryReportsPage() {
       <HeaderMotion className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-white mb-2">Delivery Reports</h1>
-          <p className="text-slate-400">Per-message delivery tracking, service health, and exportable telco audit data.</p>
+          <p className="text-slate-400">Per-message delivery tracking, service health, and exportable SMS delivery audit data.</p>
         </div>
         <div className="flex items-center gap-3">
           <LiveBadge label="Live" />
@@ -237,7 +237,7 @@ export default function DeliveryReportsPage() {
       <Card className="border-slate-800 bg-slate-900/50">
         <CardHeader>
           <CardTitle className="text-white">Service Health Checks</CardTitle>
-          <CardDescription className="text-slate-400">Latest telco platform service checks.</CardDescription>
+          <CardDescription className="text-slate-400">Latest messaging platform service checks.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -261,3 +261,7 @@ export default function DeliveryReportsPage() {
     </div>
   );
 }
+
+
+
+

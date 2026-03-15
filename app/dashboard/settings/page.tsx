@@ -61,7 +61,7 @@ function labelRole(role: string) {
     case 'DISASTER_MANAGER':
       return 'Disaster Manager';
     case 'TELCO_OPERATOR':
-      return 'Telco Operator';
+      return 'Disaster Manager';
     default:
       return role;
   }
@@ -70,7 +70,7 @@ function labelRole(role: string) {
 function labelService(service: string) {
   switch (service) {
     case 'sms_gateway':
-      return 'Safaricom Secure API';
+      return 'SMS Gateway';
     case 'database':
       return 'Secure Messaging Database';
     case 'openweather_api':
@@ -280,7 +280,7 @@ export default function SettingsPage() {
               <Card className="border-slate-800 bg-slate-900/50">
                 <CardHeader>
                   <CardTitle className="text-white">SMS Gateway Settings</CardTitle>
-                  <CardDescription className="text-slate-400">Live telco integration values used for outbound messaging.</CardDescription>
+                  <CardDescription className="text-slate-400">Live SMS integration values used for outbound messaging.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <div className="grid gap-5 md:grid-cols-2">
@@ -329,4 +329,8 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+
+
+
 

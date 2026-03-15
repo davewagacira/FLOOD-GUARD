@@ -23,7 +23,7 @@ const riskColors: Record<string, string> = {
     LOW: 'bg-green-500/10 text-green-400 border-green-500/30',
 };
 
-export default function SafaricomUsersPage() {
+export default function SubscribersPage() {
     const [subs, setSubs] = useState<Subscriber[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -42,11 +42,11 @@ export default function SafaricomUsersPage() {
         <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-6 lg:p-8">
             <HeaderMotion className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-bold text-white mb-2">Safaricom Network Users</h1>
-                    <p className="text-slate-400">Live active devices physically located within identified flood zones</p>
+                    <h1 className="text-4xl font-bold text-white mb-2">Mapped SMS Recipients</h1>
+                    <p className="text-slate-400">Live phone numbers mapped to residents in monitored flood zones</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <LiveBadge label="Safaricom Cell Tower Sync Active" className="bg-green-500/10 border-green-500/20 text-green-400" />
+                    <LiveBadge label="Recipient Mapping Active" className="bg-green-500/10 border-green-500/20 text-green-400" />
                     <Button className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700">
                         <Download className="w-4 h-4 mr-2" />Export List
                     </Button>
@@ -58,7 +58,7 @@ export default function SafaricomUsersPage() {
                 <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800/80">
                     <div className="text-blue-400 mb-3"><Users className="w-5 h-5" /></div>
                     <p className="text-3xl font-bold text-white mb-1">{subs.length.toLocaleString()}</p>
-                    <p className="text-sm text-slate-400">Devices in Range</p>
+                    <p className="text-sm text-slate-400">Mapped Recipients</p>
                 </div>
                 <div className="p-6 rounded-xl bg-slate-900/50 border border-slate-800/80">
                     <div className="text-orange-400 mb-3"><AlertTriangle className="w-5 h-5" /></div>
@@ -92,7 +92,7 @@ export default function SafaricomUsersPage() {
                                     <tr>
                                         <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                                             <Users className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                                            No devices mapped to flood zones currently.
+                                            No SMS recipients mapped to flood zones currently.
                                         </td>
                                     </tr>
                                 ) : subs.map((sub) => (
@@ -134,4 +134,10 @@ export default function SafaricomUsersPage() {
         </div>
     );
 }
+
+
+
+
+
+
 

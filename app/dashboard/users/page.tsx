@@ -12,7 +12,8 @@ interface User { id: string; name: string; email: string; role: string; isActive
 const roleColors: Record<string, string> = {
   ADMIN: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
   DISASTER_MANAGER: 'bg-red-500/10 text-red-400 border-red-500/30',
-  TELCO_OPERATOR: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  TELCO_OPERATOR: 'bg-red-500/10 text-red-400 border-red-500/30',
+  ngo: 'bg-red-500/10 text-red-400 border-red-500/30',
 };
 
 function timeAgo(date: string | null): string {
@@ -70,7 +71,7 @@ export default function UsersPage() {
                     <td className="px-6 py-4"><p className="font-medium text-white">{user.name}</p></td>
                     <td className="px-6 py-4"><div className="flex items-center gap-2 text-slate-400 text-sm"><Mail className="w-4 h-4" />{user.email}</div></td>
                     <td className="px-6 py-4 text-sm text-slate-300">{user.organization.name}</td>
-                    <td className="px-6 py-4"><Badge className={`${roleColors[user.role] ?? 'bg-slate-500/10 text-slate-400'} border`}>{user.role.replace('_', ' ')}</Badge></td>
+                    <td className="px-6 py-4"><Badge className={`${roleColors[user.role] ?? 'bg-slate-500/10 text-slate-400'} border`}>{user.role === 'TELCO_OPERATOR' ? 'DISASTER MANAGER' : user.role.replace('_', ' ')}</Badge></td>
                     <td className="px-6 py-4"><Badge className={user.isActive ? 'bg-green-500/20 text-green-400' : 'bg-slate-500/20 text-slate-400'}>{user.isActive ? 'Active' : 'Inactive'}</Badge></td>
                     <td className="px-6 py-4 text-sm text-slate-400">{timeAgo(user.lastLoginAt)}</td>
                     <td className="px-6 py-4"><button className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors text-slate-400 hover:text-white"><Edit2 className="w-4 h-4" /></button></td>
@@ -84,4 +85,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
 

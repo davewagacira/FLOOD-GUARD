@@ -167,7 +167,7 @@ export default function AlertApprovalsPage() {
       <HeaderMotion className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-white mb-2">Alert Approvals</h1>
-          <p className="text-slate-400">Approve, reject, and launch telco broadcasts from live alerts.</p>
+          <p className="text-slate-400">Approve, reject, and launch live SMS broadcasts from active alerts.</p>
         </div>
         <LiveBadge label="Live Queue" />
       </HeaderMotion>
@@ -357,3 +357,4 @@ export default function AlertApprovalsPage() {
     </div>
   );
 }
+

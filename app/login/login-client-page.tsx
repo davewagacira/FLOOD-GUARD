@@ -17,11 +17,6 @@ const ROLE_CREDENTIALS = [
     role: 'Disaster Manager',
     desc: 'Flood Monitoring & Response',
   },
-  {
-    email: 'operator@safaricom.ke',
-    role: 'Telco Operator',
-    desc: 'SMS Alert Orchestration',
-  },
 ];
 
 type LoginClientPageProps = {
@@ -90,10 +85,10 @@ export function LoginClientPage({ activeZonesCount }: LoginClientPageProps) {
 
           <div className="max-w-xl">
             <h1 className="mt-6 text-4xl font-bold leading-tight text-white xl:text-5xl">
-              Coordinate flood alerts, telco broadcasts, and response operations from one secure workspace.
+              Coordinate flood alerts, SMS broadcasts, and response operations from one secure workspace.
             </h1>
             <p className="mt-4 max-w-lg text-base leading-7 text-slate-200/85 xl:text-lg">
-              Review high-risk zones, approve alert actions, and monitor delivery intelligence with one unified operational dashboard.
+              Review high-risk zones, manage broadcasts, and monitor delivery intelligence with one unified operational dashboard.
             </p>
           </div>
 

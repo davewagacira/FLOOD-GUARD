@@ -103,7 +103,7 @@ export default function SMSTemplatesPage() {
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-white mb-2">SMS Templates</h1>
-          <p className="text-slate-400">Live template catalog with demo sends targeting the saved telco recipients.</p>
+          <p className="text-slate-400">Live template catalog with demo sends targeting the saved SMS recipients.</p>
         </div>
         <div className="flex items-center gap-3 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-emerald-300">
           <MessageSquare className="h-4 w-4" />
@@ -138,7 +138,7 @@ export default function SMSTemplatesPage() {
 
                 <div className="mb-5 flex items-center justify-between text-xs text-slate-500">
                   <span>{template.body.length} chars</span>
-                  <span>Targets the 2 saved telco recipients</span>
+                  <span>Targets the saved SMS recipients</span>
                 </div>
 
                 <Button
@@ -180,4 +180,6 @@ export default function SMSTemplatesPage() {
     </div>
   );
 }
+
+
 

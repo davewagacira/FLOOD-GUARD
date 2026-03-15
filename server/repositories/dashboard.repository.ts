@@ -243,7 +243,7 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
 
 // ─── TELCO / SMS DASHBOARD ────────────────────────────────────────────────────
 
-export async function getTelcoDashboardMetrics() {
+export async function getMessagingDashboardMetrics() {
     const now = new Date();
     const todayStart = startOfDay(now);
     const sevenDaysAgo = subDays(now, 7);
@@ -281,9 +281,9 @@ export async function getTelcoDashboardMetrics() {
             },
         }),
 
-        // Telco queue:
+        // Messaging queue:
         // - PENDING_APPROVAL alerts still need admin action
-        // - APPROVED alerts are ready for the telco operator to trigger
+        // - APPROVED alerts are ready for a disaster manager to trigger
         prisma.alert.findMany({
             where: { status: { in: ["PENDING_APPROVAL", "APPROVED"] } },
             take: 12,
@@ -367,3 +367,6 @@ export async function getTelcoDashboardMetrics() {
         },
     };
 }
+
+
+

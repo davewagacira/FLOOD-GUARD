@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { requireRole } from "@/lib/server-auth";
 import { normalizePhone, sendBulkSms } from "@/lib/sms/sms-provider";
 
 export async function POST(req: NextRequest) {
+    const auth = await requireRole(req, ["ADMIN", "DISASTER_MANAGER"]);
+    if (auth.error || !auth.user) return auth.error;
+
     try {
         const { message, title } = await req.json();
 
@@ -20,19 +24,13 @@ export async function POST(req: NextRequest) {
 
         const phoneNumbers = [...new Set(recipients.map((recipient) => normalizePhone(recipient.phoneNumber)))];
 
-        const telcoOrg = await prisma.organization.findFirst({ where: { type: "TELCO" } });
-
-        if (!telcoOrg) {
-            return NextResponse.json({ error: "Telco Organization not found in DB." }, { status: 500 });
-        }
-
         const alert = await prisma.alert.create({
             data: {
                 title: title || "Manual Template Broadcast",
                 message,
                 riskLevel: "MEDIUM",
                 status: "SENDING",
-                organizationId: telcoOrg.id,
+                organizationId: auth.user.organizationId,
                 recipientCount: phoneNumbers.length,
             },
         });

@@ -13,8 +13,7 @@ const ROLE_LABEL: Record<string, string> = {
   ADMIN: 'Administrator',
   ngo: 'Disaster Manager',
   DISASTER_MANAGER: 'Disaster Manager',
-  telco: 'Telco Operator',
-  TELCO_OPERATOR: 'Telco Operator',
+  TELCO_OPERATOR: 'Disaster Manager',
 };
 
 const ROLE_COLOR: Record<string, string> = {
@@ -22,8 +21,7 @@ const ROLE_COLOR: Record<string, string> = {
   ADMIN: 'text-orange-400',
   ngo: 'text-blue-400',
   DISASTER_MANAGER: 'text-blue-400',
-  telco: 'text-purple-400',
-  TELCO_OPERATOR: 'text-purple-400',
+  TELCO_OPERATOR: 'text-blue-400',
 };
 
 function usePageTitle(pathname: string) {
@@ -31,8 +29,6 @@ function usePageTitle(pathname: string) {
     '/dashboard': 'Overview',
     '/dashboard/admin': 'Overview',
     '/dashboard/ngo': 'Overview',
-    '/dashboard/telco': 'Overview',
-    '/dashboard/subscribers': 'Network Users',
     '/dashboard/organizations': 'Organizations',
     '/dashboard/users': 'Users',
     '/dashboard/flood-zones': 'Flood Zones',
@@ -41,7 +37,6 @@ function usePageTitle(pathname: string) {
     '/dashboard/flood-map': 'Flood Map',
     '/dashboard/distress-signals': 'Distress Signals',
     '/dashboard/response-teams': 'Rescue Resources',
-    '/dashboard/alert-approvals': 'Alert Approvals',
     '/dashboard/broadcasts': 'Broadcasts',
     '/dashboard/delivery-reports': 'Delivery Reports',
     '/dashboard/sms-templates': 'SMS Templates',
@@ -71,10 +66,10 @@ export function DashboardTopbar({
     (user?.email === 'admin@floodguard.ke' || user?.name === 'FloodGuard Admin' || user?.name === 'Admin');
   let fullName = user?.name ?? '';
   if (fullName === 'FloodGuard Admin') fullName = 'Admin';
-  if (fullName === 'Safaricom Operator') fullName = 'Safaricom';
   if ((role === 'ngo' || normalizedRole === 'DISASTER_MANAGER') && user?.organizationName) {
     fullName = user.organizationName.includes('Red Cross') ? 'Red Cross' : user.organizationName;
   }
+
 
   const initials = fullName
     .split(' ')
@@ -197,3 +192,4 @@ export function DashboardTopbar({
     </motion.header>
   );
 }
+

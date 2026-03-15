@@ -4,7 +4,7 @@
 
 In early March 2026, Nairobi experienced one of its most devastating flood disasters in recent memory. At least 62 people died nationally, with Nairobi recording the highest death toll. More than 5,260 households were displaced inside the city, and floodwaters exposed a painful truth: Nairobi's flood risk is no longer a seasonal inconvenience. It is a fast-moving urban life-and-death problem.
 
-FloodGuard is a near-production disaster intelligence and emergency coordination platform designed to help cities, telcos, NGOs, and disaster managers move from reactive response to coordinated early action.
+FloodGuard is a near-production disaster intelligence and emergency coordination platform designed to help cities, NGOs, and disaster managers move from reactive response to coordinated early action.
 
 ## The Core Problem We Solved
 
@@ -15,9 +15,9 @@ Before FloodGuard:
 - weather intelligence lives in one place
 - flood-prone geography lives in another
 - community exposure is rarely operationalized in real time
-- telco alerting is separate from field coordination
+- public alerting is often separate from field coordination
 - distress responses arrive late and are hard to triage
-- administrators, NGOs, and telcos do not share one operational picture
+- administrators and disaster response organizations do not share one operational picture
 
 FloodGuard connects the full chain:
 
@@ -26,7 +26,7 @@ FloodGuard connects the full chain:
 3. assess which communities are most exposed
 4. generate actionable intelligence
 5. route alerts through approval workflows
-6. trigger mass SMS communication through telco infrastructure
+6. trigger mass SMS communication through trusted disaster-response messaging infrastructure
 7. ingest distress responses and feed them back into field operations
 
 ## What Makes FloodGuard Stand Out
@@ -54,9 +54,8 @@ The platform is built around the exact institutions that need to collaborate dur
 
 - administrators
 - disaster managers
-- telco operators
 
-That makes it immediately compelling for partnerships with county disaster teams, the Kenya Red Cross, Safaricom and other mobile network operators, humanitarian NGOs, and public safety agencies.
+That makes it immediately compelling for partnerships with county disaster teams, the Kenya Red Cross, humanitarian NGOs, and public safety agencies.
 
 ### 4. It already uses the right infrastructure stack
 
@@ -67,7 +66,7 @@ FloodGuard integrates services that make the platform practical, scalable, and c
 - `Vertex AI`
 - `Ably`
 - `Neon PostgreSQL + Prisma`
-- telco-ready SMS delivery workflows
+- NGO-managed SMS delivery workflows
 
 ## The FloodGuard Use Cases
 
@@ -101,11 +100,11 @@ The disaster manager can:
 
 This is where FloodGuard becomes life-saving. It turns scattered data into actionable response intelligence.
 
-### Telco Use Case: Trusted, Controlled Mass Warning at Scale
+### Disaster Manager Use Case: Trusted, Controlled Mass Warning at Scale
 
-The telco operator is the communication delivery engine.
+The disaster manager is the communication delivery lead.
 
-The telco team can:
+The disaster management team can:
 
 - receive queued alert requests
 - distinguish pending approvals from ready-to-send broadcasts
@@ -114,7 +113,7 @@ The telco team can:
 - monitor delivery health and dispatch logs
 - track incoming SMS replies from the public
 
-Most hackathon solutions stop at "send an SMS." FloodGuard actually models the institutional workflow needed for real telecom partnership and public alert operations.
+Most hackathon solutions stop at "send an SMS." FloodGuard models the institutional workflow needed for real disaster-response messaging and public alert operations.
 
 ### Community Use Case: Faster Warnings, Better Chance of Survival
 
@@ -141,7 +140,7 @@ It directly targets the failure points Nairobi keeps experiencing:
 
 ## Why FloodGuard Is Partnership-Ready
 
-### For telcos
+### For disaster-response organizations
 
 - creates a structured public warning workflow
 - reduces risk of unverified or poorly timed mass SMS
@@ -182,7 +181,7 @@ That is the difference between a clever app and a deployable civic technology pl
 - live weather ingestion workflow
 - flood-risk assessment pipeline
 - real-time dashboarding
-- admin, disaster manager, and telco role separation
+- admin and disaster manager role separation
 - SMS approval and dispatch workflow
 - distress-signal visibility for field response
 - production-oriented full-stack architecture with hourly weather ingestion, provider health tracking, calibrated flood thresholds, and incident feedback capture
@@ -210,5 +209,9 @@ shared, actionable, real-time coordination.
 That is why FloodGuard stands out.
 That is why it is partnership-worthy.
 And that is why it can help save lives.
+
+
+
+
 
 

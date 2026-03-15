@@ -98,8 +98,8 @@ export function TablePageSkeleton({ rows = 6 }: { rows?: number }) {
     );
 }
 
-/** Skeleton for Telco/NGO main dashboard */
-export function TelcoDashboardSkeleton() {
+/** Skeleton for disaster manager dashboard */
+export function DisasterManagerDashboardSkeleton() {
     return (
         <div className="flex-1 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-8 overflow-auto">
             <div className="mb-8 flex items-center justify-between">
@@ -194,3 +194,4 @@ export function CardGridSkeleton({ cards = 4 }: { cards?: number }) {
         </div>
     );
 }
+

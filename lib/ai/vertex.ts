@@ -89,7 +89,7 @@ Respond in JSON with this exact structure:
 Keep it concise, factual, and actionable. Focus on immediate actions for Nairobi flood responders.
 Recommendations should match responder responsibilities:
 - disaster managers coordinate field response, shelters, public safety actions, and escalation
-- telco broadcasts are handled by telecommunications partners, so say "coordinate with telco partners" instead of telling responders to send SMS directly
+- resident broadcasts are handled by the disaster management team through their SMS integration, so recommendations should tell coordinators to prepare or send alerts directly when appropriate
 - do not assign actions outside the emergency coordination role unless phrased as coordination with the responsible partner.`;
 
     try {
@@ -103,7 +103,7 @@ Recommendations should match responder responsibilities:
             recommendations: [
                 "Monitor river levels and rainfall continuously",
                 "Pre-position rescue resources in nearby staging areas",
-                "Coordinate with telco partners to prepare resident alerts if risk increases",
+                "Prepare resident SMS alerts if risk increases and notify field teams early",
             ],
             confidence: 0.5,
         };
@@ -152,3 +152,5 @@ Return ONLY the SMS text, nothing else.`;
         return `FLOOD ALERT [${params.zoneName}]: ${params.riskLevel} risk. Move to higher ground. Reply 1=NEED HELP 2=SAFE. FloodGuard`;
     }
 }
+
+

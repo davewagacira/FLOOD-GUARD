@@ -57,10 +57,10 @@ export async function POST(req: NextRequest) {
         });
 
         // Map DB role to UI role
-        const roleMap: Record<string, "admin" | "ngo" | "telco"> = {
+        const roleMap: Record<string, "admin" | "ngo"> = {
             ADMIN: "admin",
             DISASTER_MANAGER: "ngo",
-            TELCO_OPERATOR: "telco",
+            TELCO_OPERATOR: "ngo",
         };
 
         const uiRole = roleMap[user.role] ?? "ngo";

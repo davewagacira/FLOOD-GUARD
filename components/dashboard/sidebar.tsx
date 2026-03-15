@@ -4,8 +4,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  LayoutDashboard, Building2, Users, AlertTriangle, MapPin,
-  Activity, MessageSquare, BarChart3, LogOut, Droplets,
+  LayoutDashboard, Building2, AlertTriangle,
+  Activity, MessageSquare, BarChart3, LogOut,
   Settings, HelpCircle, ShieldAlert, Truck, Map, FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,8 @@ export function getNavItems(role: string) {
     { href: '/dashboard/organizations', label: 'Organizations', icon: Building2 },
     { href: '/dashboard/flood-map', label: 'Flood Map', icon: Map },
     { href: '/dashboard/incidents', label: 'Incidents', icon: ShieldAlert },
+    { href: '/dashboard/broadcasts', label: 'Broadcasts', icon: MessageSquare },
+    { href: '/dashboard/delivery-reports', label: 'Delivery Reports', icon: BarChart3 },
     { href: '/dashboard/system-health', label: 'System Health', icon: Activity },
   ];
 
@@ -25,17 +27,11 @@ export function getNavItems(role: string) {
     ...base,
     { href: '/dashboard/flood-map', label: 'Flood Map', icon: Map },
     { href: '/dashboard/incidents', label: 'Incidents', icon: AlertTriangle },
-    { href: '/dashboard/distress-signals', label: 'Distress Signals', icon: HelpCircle },
-    { href: '/dashboard/response-teams', label: 'Rescue Resources', icon: Truck },
-  ];
-
-  if (role === 'telco' || role === 'TELCO_OPERATOR') return [
-    ...base,
-    { href: '/dashboard/subscribers', label: 'Network Users', icon: Users },
-    { href: '/dashboard/alert-approvals', label: 'Alert Approvals', icon: AlertTriangle },
-    { href: '/dashboard/sms-templates', label: 'SMS Templates', icon: FileText },
     { href: '/dashboard/broadcasts', label: 'Broadcasts', icon: MessageSquare },
     { href: '/dashboard/delivery-reports', label: 'Delivery Reports', icon: BarChart3 },
+    { href: '/dashboard/sms-templates', label: 'SMS Templates', icon: FileText },
+    { href: '/dashboard/distress-signals', label: 'Distress Signals', icon: HelpCircle },
+    { href: '/dashboard/response-teams', label: 'Rescue Resources', icon: Truck },
   ];
 
   return base;

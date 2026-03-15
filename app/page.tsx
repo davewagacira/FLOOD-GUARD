@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export const metadata = {
   title: 'FloodGuard - Real-time Disaster Intelligence Platform',
-  description: 'Monitor flood risks, coordinate emergency response, and orchestrate critical SMS alerts in real-time.',
+  description: 'Monitor flood risks, coordinate emergency response, and orchestrate critical SMS alerts in real time.',
 };
 
 export default function LandingPage() {
@@ -80,7 +80,7 @@ export default function LandingPage() {
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl">Complete Disaster Management Suite</h2>
             <p className="mx-auto max-w-2xl text-lg text-slate-400 sm:text-xl">
-              Purpose-built for administrators, NGOs, and telecommunications providers
+              Purpose-built for administrators and disaster response organizations
             </p>
           </div>
 
@@ -161,7 +161,7 @@ export default function LandingPage() {
               <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-green-500/15 text-sm font-semibold text-green-300">03</div>
               <h3 className="mb-3 text-xl font-semibold">Alert Communities</h3>
               <p className="text-slate-400">
-                Critical SMS broadcasts are approved, delivered, and monitored with clear reporting across stakeholders.
+                Critical SMS broadcasts are prepared, delivered, and monitored with clear reporting across response teams.
               </p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function LandingPage() {
             <div className={navCardClassName}>
               <h3 className="mb-3 text-xl font-semibold">Shared Operating Picture</h3>
               <p className="text-slate-400">
-                Give admins, NGOs, and telcos one source of truth across response planning, alerts, and field operations.
+                Give admins and disaster managers one source of truth across response planning, alerts, and field operations.
               </p>
             </div>
             <div className={navCardClassName}>
@@ -243,3 +243,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

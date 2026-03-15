@@ -49,18 +49,6 @@ async function main() {
         },
     });
 
-    const safaricomOrg = await prisma.organization.upsert({
-        where: { id: "org-safaricom" },
-        update: {},
-        create: {
-            id: "org-safaricom",
-            name: "Safaricom PLC",
-            type: "TELCO",
-            description: "Primary SMS delivery partner",
-            contactEmail: "operator@safaricom.ke",
-            isActive: true,
-        },
-    });
 
     console.log("✅ Organizations created\n");
 
@@ -90,19 +78,6 @@ async function main() {
             hashedPassword: hashedPass,
             role: "DISASTER_MANAGER",
             organizationId: redCrossOrg.id,
-            isActive: true,
-        },
-    });
-
-    await prisma.user.upsert({
-        where: { email: "operator@safaricom.ke" },
-        update: {},
-        create: {
-            email: "operator@safaricom.ke",
-            name: "Safaricom Operator",
-            hashedPassword: hashedPass,
-            role: "TELCO_OPERATOR",
-            organizationId: safaricomOrg.id,
             isActive: true,
         },
     });
@@ -1008,7 +983,6 @@ async function main() {
     console.log("\n📋 Login credentials:");
     console.log("   admin@floodguard.ke     → ADMIN            (Pass@123#)");
     console.log("   coordinator@redcross.ke → DISASTER_MANAGER (Pass@123#)");
-    console.log("   operator@safaricom.ke   → TELCO_OPERATOR   (Pass@123#)");
 }
 
 main()
@@ -1019,4 +993,6 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
+
+
 

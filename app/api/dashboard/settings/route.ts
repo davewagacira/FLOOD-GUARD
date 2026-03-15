@@ -14,7 +14,7 @@ async function getSettingsSnapshot(userId: string) {
     }
 
     const smsProvider =
-        user.role === "TELCO_OPERATOR" || user.role === "ADMIN"
+        user.role === "DISASTER_MANAGER" || user.role === "TELCO_OPERATOR" || user.role === "ADMIN"
             ? await prisma.smsProviderConfig.findFirst({
                   orderBy: [{ isActive: "desc" }, { updatedAt: "desc" }],
               })
@@ -24,7 +24,7 @@ async function getSettingsSnapshot(userId: string) {
         where: {
             service: {
                 in:
-                    user.role === "TELCO_OPERATOR"
+                    user.role === "DISASTER_MANAGER" || user.role === "TELCO_OPERATOR"
                         ? ["sms_gateway", "database"]
                         : ["database", "sms_gateway", "openweather_api", "tomorrow_io_api"],
             },
@@ -145,7 +145,7 @@ export async function PATCH(req: NextRequest) {
             });
         }
 
-        if (body.smsProvider && (user.role === "TELCO_OPERATOR" || user.role === "ADMIN")) {
+        if (body.smsProvider && (user.role === "DISASTER_MANAGER" || user.role === "TELCO_OPERATOR" || user.role === "ADMIN")) {
             const currentProvider =
                 (body.smsProvider.id &&
                     (await prisma.smsProviderConfig.findUnique({

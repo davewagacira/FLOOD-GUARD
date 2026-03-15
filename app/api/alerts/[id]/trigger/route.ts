@@ -1,5 +1,5 @@
 // POST /api/alerts/[id]/trigger
-// Telco operator manually triggers the SMS broadcast
+// Admin or disaster manager manually triggers the SMS broadcast
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
@@ -96,3 +96,4 @@ export async function POST(
         return NextResponse.json({ error: "Failed to trigger broadcast" }, { status: 500 });
     }
 }
+

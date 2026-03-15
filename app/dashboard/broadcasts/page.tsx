@@ -74,7 +74,7 @@ export default function BroadcastsPage() {
       <HeaderMotion className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-white mb-2">Broadcasts</h1>
-          <p className="text-slate-400">Live telco broadcast history, queue status, and zone-level delivery performance.</p>
+          <p className="text-slate-400">Live SMS broadcast history, queue status, and zone-level delivery performance.</p>
         </div>
         <LiveBadge label="Live Data" />
       </HeaderMotion>
@@ -209,3 +209,4 @@ export default function BroadcastsPage() {
     </div>
   );
 }
+

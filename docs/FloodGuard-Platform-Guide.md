@@ -7,7 +7,6 @@ This guide explains how FloodGuard works in plain language for non-developers.
 It is meant for:
 
 - Platform administrators
-- Telco operators
 - Disaster managers such as Kenya Red Cross
 - Project stakeholders
 - Trainers and onboarding teams
@@ -36,7 +35,7 @@ It brings together:
 - emergency incident coordination
 - citizen distress signals
 - rescue resource tracking
-- mass SMS broadcasting through telco operators
+- mass SMS broadcasting through the disaster response messaging team
 
 The goal is simple:
 
@@ -52,7 +51,7 @@ FloodGuard is designed so that each organization sees only the tools it needs, w
 
 ## 2. The Main Roles in FloodGuard
 
-FloodGuard has three main operational roles.
+FloodGuard currently has two main user roles plus a shared messaging workflow.
 
 ### 2.1 Administrator
 
@@ -82,19 +81,19 @@ This role is responsible for:
 
 Disaster managers are the operational response team.
 
-### 2.3 Telco Operator
+### 2.3 Messaging Operations
 
-This role represents the telecommunications partner, such as Safaricom.
+SMS delivery is currently handled by the disaster management organization, such as Kenya Red Cross, through its own messaging integration.
 
 This role is responsible for:
 
-- reviewing emergency SMS alerts
-- approving or rejecting outbound alert campaigns
-- sending broadcasts to network users
+- reviewing emergency SMS alerts for public release
+- approving or cancelling outbound alert campaigns
+- sending broadcasts to mapped recipients and residents
 - monitoring delivery status and failures
 - tracking incoming SMS replies relevant to field response
 
-Telco operators are the communication delivery team.
+Disaster managers own the communication delivery workflow in the current version of FloodGuard.
 
 ---
 
@@ -174,11 +173,11 @@ When risk rises, the flood map and operational dashboards help the Admin and Dis
 - whether distress signals are appearing
 - whether rescue teams need to be staged
 
-### Step 6: Telco receives alert requests
+### Step 6: Disaster Managers review alert requests
 
-When an alert is prepared for public communication, the Telco dashboard receives it for review.
+When an alert is prepared for public communication, the Disaster Manager reviews it inside the shared operational dashboard.
 
-The telco operator can:
+The disaster manager can:
 
 - check the message
 - review the affected area
@@ -191,7 +190,7 @@ This is an important control step that helps avoid misinformation and accidental
 
 Once approved, the platform sends the SMS campaign through the configured SMS gateway.
 
-FloodGuard currently integrates with the secure SMS delivery pipeline used for telco broadcasts and delivery reporting.
+FloodGuard currently integrates with the secure SMS delivery pipeline configured by the disaster response organization for broadcasts and delivery reporting.
 
 The system records:
 
@@ -260,7 +259,7 @@ Used for:
 
 This helps convert technical weather and risk data into understandable action points.
 
-### 4.4 SMS Gateway / Telco Messaging Layer
+### 4.4 SMS Gateway / Messaging Layer
 
 Used for:
 
@@ -290,7 +289,7 @@ Used for storing and serving:
 Used to ensure:
 
 - admins only see admin controls
-- telco teams only see communication workflows
+- disaster managers handle communication workflows alongside incident coordination
 - disaster managers only see response workflows
 
 This keeps the platform secure and role-specific.
@@ -311,7 +310,7 @@ This gives disaster managers:
 - current system visibility
 - reliable incident and map data
 
-### Disaster Manager to Telco
+### Disaster Manager to Messaging
 
 Disaster operations identify which situations need citizen communication.
 
@@ -319,11 +318,11 @@ This leads to:
 
 - alert drafting
 - escalation of severe risk
-- public warning messages requiring telco approval and distribution
+- public warning messages requiring review and distribution
 
-### Telco to Disaster Manager
+### Messaging to Disaster Manager
 
-Telco broadcasts alerts and surfaces SMS delivery outcomes and incoming replies.
+The messaging workflow broadcasts alerts and surfaces SMS delivery outcomes and incoming replies.
 
 This helps disaster teams know:
 
@@ -438,16 +437,16 @@ This page keeps the platform identity and operating configuration accurate.
 
 ---
 
-## 7. Page-by-Page Guide for the Telco Operator
+## 7. Page-by-Page Guide for Messaging Operations
 
-The Telco dashboard focuses on communications, approvals, broadcasts, recipients, and delivery outcomes.
+The messaging workflow focuses on communications, approvals, broadcasts, recipients, and delivery outcomes.
 
 ### 7.1 Overview
 
 Purpose:
 Provide a live operational summary of SMS activity.
 
-What the Telco operator sees:
+What the disaster manager sees:
 
 - messages sent
 - messages delivered
@@ -478,7 +477,7 @@ Broadcast quality depends on accurate recipient data.
 Purpose:
 Review emergency alerts before they are sent.
 
-What the Telco operator can do:
+What the disaster manager can do:
 
 - review pending alert requests
 - check severity and location
@@ -508,7 +507,7 @@ Templates help ensure messaging stays clear, short, and operationally consistent
 Purpose:
 Track approved, queued, and sent broadcasts.
 
-What the Telco operator can see:
+What the disaster manager can see:
 
 - messages waiting to go out
 - messages already sent
@@ -537,7 +536,7 @@ A sent alert is only useful if it reaches people.
 ### 7.7 Settings
 
 Purpose:
-Keep telco-facing account and integration settings current.
+Keep messaging account and integration settings current.
 
 What it supports:
 
@@ -660,7 +659,7 @@ Recommended daily use:
 
 1. Admin checks system health and flood map readiness
 2. Disaster Manager checks overview, open incidents, and distress queue
-3. Telco checks pending approvals, delivery reports, and recipient readiness
+3. Disaster managers check pending approvals, delivery reports, and recipient readiness
 
 ### 9.2 During Rising Flood Risk
 
@@ -670,7 +669,7 @@ Recommended workflow:
 2. risk severity is confirmed
 3. an incident may be created or updated
 4. an alert is prepared for public communication
-5. Telco reviews and approves the alert
+5. Disaster managers review and approve the alert
 6. the broadcast is sent
 7. delivery is monitored
 8. incoming distress signals are triaged
@@ -680,7 +679,7 @@ Recommended workflow:
 
 Recommended follow-up:
 
-1. Telco checks delivery reports
+1. Disaster managers check delivery reports
 2. Disaster team checks for new distress signals
 3. Incidents are updated based on field reality
 4. resources are reassigned if conditions worsen
@@ -761,7 +760,7 @@ If you only remember one thing, remember this:
 FloodGuard helps three teams work together.
 
 - Admin keeps the platform and flood intelligence ready
-- Telco sends the right alerts to the right people
+- The messaging workflow sends the right alerts to the right people
 - Red Cross or disaster teams respond to people and incidents on the ground
 
 The platform starts with weather and flood risk, turns that into alerts and incidents, and then supports rescue and follow-up until the situation is under control.
@@ -779,5 +778,9 @@ This document can be used for:
 - preparing operations handover notes
 
 For best results, walk each team through only the pages they own first, then show how the roles connect in the full emergency lifecycle.
+
+
+
+
 
 

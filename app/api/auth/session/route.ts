@@ -7,10 +7,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    const roleMap: Record<string, "admin" | "ngo" | "telco"> = {
+    const roleMap: Record<string, "admin" | "ngo"> = {
         ADMIN: "admin",
         DISASTER_MANAGER: "ngo",
-        TELCO_OPERATOR: "telco",
+        TELCO_OPERATOR: "ngo",
     };
 
     return NextResponse.json({
