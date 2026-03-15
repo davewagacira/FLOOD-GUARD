@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Loader2, RefreshCw, AlertTriangle, Users, Droplets, Wind,
   Thermometer, Cloud, MapPin, Hospital, Shield, School,
-  ChevronRight, X, Plus, Edit2, Trash2, Zap, Activity,
+  ChevronRight, ChevronDown, X, Plus, Edit2, Trash2, Zap, Activity,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -561,14 +561,17 @@ export default function FloodMapPage() {
             <label htmlFor="region-selector" className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               Location
             </label>
-            <select
-              id="region-selector"
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 pr-10 text-sm text-white outline-none transition-colors focus:border-orange-500/40"
-            >
-              <option value="nairobi">Nairobi</option>
-            </select>
+            <div className="relative">
+              <select
+                id="region-selector"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 pr-12 text-sm text-white outline-none transition-colors focus:border-orange-500/40"
+              >
+                <option value="nairobi">Nairobi</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            </div>
             <p className="mt-1 text-[11px] text-slate-500">More locations coming soon.</p>
           </div>
           {loadError && <p className="mt-2 text-xs text-red-400">{loadError}</p>}
