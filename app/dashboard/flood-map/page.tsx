@@ -978,7 +978,7 @@ export default function FloodMapPage() {
                     <div>
                       <div className="mb-3 rounded-xl border border-slate-800/70 bg-slate-900/60 p-3">
                         <p className="text-xs font-semibold text-white">Nearby infrastructure and response points</p>
-                        <p className="mt-1 text-xs text-slate-400">This panel prioritizes live Google Places results and falls back to verified Flood Guard infrastructure if needed.</p>
+                        <p className="mt-1 text-xs text-slate-400">This panel prioritizes live nearby results and falls back to verified Flood Guard infrastructure if needed.</p>
                       </div>
                       {nearbyLoading ? (
                         <div className="flex items-center justify-center py-8 gap-2 text-slate-500">
