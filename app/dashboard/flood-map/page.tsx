@@ -162,7 +162,7 @@ export default function FloodMapPage() {
   const normalizedRole = String(user?.role ?? '').toUpperCase();
   const isAdmin = normalizedRole === 'ADMIN';
   const isDisasterManager = normalizedRole === 'DISASTER_MANAGER' || normalizedRole === 'NGO';
-  const canRefreshZoneWeather = isAdmin || isDisasterManager;
+  const canRefreshZoneWeather = isAdmin;
   const canViewAiSummary = isAdmin || isDisasterManager;
 
   const mapRef = useRef<HTMLDivElement>(null);
@@ -561,15 +561,17 @@ export default function FloodMapPage() {
               {drawMode ? 'Cancel Drawing' : 'Add Zone'}
             </button>
           )}
-          <button
-            onClick={runIngest}
-            disabled={ingesting || !isAdmin}
-            className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-            title={isAdmin ? 'Refresh all active flood-zone weather snapshots' : 'Only administrators can refresh all weather data'}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${ingesting ? 'animate-spin' : ''}`} />
-            {ingesting ? 'Fetchingâ€¦' : 'Refresh All Weather'}
-          </button>
+          {isAdmin && (
+            <button
+              onClick={runIngest}
+              disabled={ingesting}
+              className="flex items-center gap-2 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-400 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+              title="Refresh all active flood-zone weather snapshots"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${ingesting ? 'animate-spin' : ''}`} />
+              {ingesting ? 'Fetching…' : 'Refresh All Weather'}
+            </button>
+          )}
         </div>
       </HeaderMotion>
 
@@ -675,17 +677,19 @@ export default function FloodMapPage() {
                 </div>
 
                 {/* Refresh weather row */}
-                <div className="px-4 py-2 border-b border-slate-800/40 flex-shrink-0">
-                  <button
-                    onClick={() => refreshZoneWeather(selected)}
-                    disabled={zoneRefreshing === selected.id || !canRefreshZoneWeather}
-                    className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800/60 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition-all disabled:opacity-50"
-                    title={canRefreshZoneWeather ? 'Refresh this zone weather snapshot' : 'Only admins and disaster managers can refresh zone weather'}
-                  >
-                    <RefreshCw className={`w-3 h-3 ${zoneRefreshing === selected.id ? 'animate-spin' : ''}`} />
-                    Refresh Weather
-                  </button>
-                </div>
+                {canRefreshZoneWeather && (
+                  <div className="px-4 py-2 border-b border-slate-800/40 flex-shrink-0">
+                    <button
+                      onClick={() => refreshZoneWeather(selected)}
+                      disabled={zoneRefreshing === selected.id}
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800/60 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition-all disabled:opacity-50"
+                      title="Refresh this zone weather snapshot"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${zoneRefreshing === selected.id ? 'animate-spin' : ''}`} />
+                      Refresh Weather
+                    </button>
+                  </div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex border-b border-slate-800/60 flex-shrink-0">
@@ -957,9 +961,11 @@ export default function FloodMapPage() {
                         <div className="text-center py-8 text-slate-500">
                           <Cloud className="w-10 h-10 mx-auto mb-3 opacity-30" />
                           <p className="text-sm mb-3">No fresh weather data is available for this zone.</p>
-                          <button onClick={() => refreshZoneWeather(selected)} className="px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded-lg text-sm hover:bg-orange-500/20 transition-all">
-                            Fetch Weather Now
-                          </button>
+                          {canRefreshZoneWeather && (
+                            <button onClick={() => refreshZoneWeather(selected)} className="px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-orange-400 rounded-lg text-sm hover:bg-orange-500/20 transition-all">
+                              Fetch Weather Now
+                            </button>
+                          )}
                           {actionError && (
                             <p className="mt-3 text-xs text-orange-400">{actionError}</p>
                           )}
