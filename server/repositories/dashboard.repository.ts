@@ -246,12 +246,24 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
                 extractAggregationMetadataFromPayload(snapshot.openweatherPayload).operationalConfidenceScore ??
                 null;
 
+            const rainLast1h = tomorrowDerived.rainLast1h ?? openweatherDerived.rainLast1h;
+            const rainLast3h = tomorrowDerived.rainLast3h ?? openweatherDerived.rainLast3h;
+            const rainLast24h = tomorrowDerived.rainLast24h ?? openweatherDerived.rainLast24h;
             const forecastRainNext6h = tomorrowDerived.forecastRainNext6h ?? openweatherDerived.forecastRainNext6h;
             const forecastRainNext24h = tomorrowDerived.forecastRainNext24h ?? openweatherDerived.forecastRainNext24h;
             const forecastProbabilityMaxNext6h =
                 tomorrowDerived.forecastProbabilityMaxNext6h ?? openweatherDerived.forecastProbabilityMaxNext6h;
             const forecastProbabilityMaxNext24h =
                 tomorrowDerived.forecastProbabilityMaxNext24h ?? openweatherDerived.forecastProbabilityMaxNext24h;
+
+            const recentRainSeverity =
+                ((rainLast1h ?? 0) >= 12 || (rainLast3h ?? 0) >= 30 || (rainLast24h ?? 0) >= 80) &&
+                (zone.drainageScore <= 40 || zone.historicalFloodScore >= 65 || (zone.riverProximityKm ?? 99) <= 0.5)
+                    ? "HIGH"
+                    : ((rainLast1h ?? 0) >= 6 || (rainLast3h ?? 0) >= 18 || (rainLast24h ?? 0) >= 45) &&
+                        (zone.drainageScore <= 50 || zone.historicalFloodScore >= 55 || (zone.riverProximityKm ?? 99) <= 1)
+                        ? "MEDIUM"
+                        : null;
 
             const forecastSeverity =
                 (forecastRainNext6h ?? 0) >= 20 || (forecastProbabilityMaxNext6h ?? 0) >= 80
@@ -262,21 +274,37 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
                             ? "WATCH"
                             : null;
 
-            if (!forecastSeverity) return null;
+            const severityRank = { HIGH: 3, MEDIUM: 2, WATCH: 1 } as const;
+            const severityCandidates = [forecastSeverity, recentRainSeverity].filter((value): value is keyof typeof severityRank => value !== null);
+            const advisorySeverity = severityCandidates.length === 0
+                ? null
+                : severityCandidates.sort((a, b) => severityRank[b] - severityRank[a])[0];
+
+            if (!advisorySeverity) return null;
+
+            const triggers: string[] = [];
+            if (forecastSeverity) triggers.push("forecast signal");
+            if (recentRainSeverity) triggers.push("recent rainfall + zone vulnerability");
+            if (zone.drainageScore <= 35) triggers.push("poor drainage");
+            if ((zone.riverProximityKm ?? 99) <= 0.5) triggers.push("river exposure");
 
             const summary =
-                forecastSeverity === "HIGH"
-                    ? "Heavy rainfall signals suggest the zone may deteriorate quickly in the next few hours."
-                    : forecastSeverity === "MEDIUM"
-                        ? "Rainfall signals show a meaningful chance of short-term escalation."
-                        : "Forecast conditions should be watched because additional rain could worsen runoff.";
+                advisorySeverity === "HIGH"
+                    ? "Heavy rain conditions or recent runoff pressure suggest the zone may deteriorate quickly."
+                    : advisorySeverity === "MEDIUM"
+                        ? "Weather and flood-vulnerability signals show a meaningful chance of near-term escalation."
+                        : "Conditions should be watched because additional rain or runoff could worsen localized flooding.";
 
             return {
                 zoneId: zone.id,
                 zoneName: zone.name,
                 county: zone.location.county,
-                severity: forecastSeverity,
+                severity: advisorySeverity,
                 summary,
+                triggers,
+                rainLast1h,
+                rainLast3h,
+                rainLast24h,
                 forecastRainNext6h,
                 forecastRainNext24h,
                 forecastProbabilityMaxNext6h,
@@ -291,6 +319,7 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
             const severityRank = { HIGH: 3, MEDIUM: 2, WATCH: 1 };
             return (
                 severityRank[b.severity as keyof typeof severityRank] - severityRank[a.severity as keyof typeof severityRank] ||
+                (b.rainLast3h ?? 0) - (a.rainLast3h ?? 0) ||
                 (b.forecastRainNext6h ?? 0) - (a.forecastRainNext6h ?? 0) ||
                 (b.forecastProbabilityMaxNext6h ?? 0) - (a.forecastProbabilityMaxNext6h ?? 0)
             );

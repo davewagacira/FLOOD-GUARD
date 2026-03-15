@@ -50,6 +50,10 @@ interface NgoMetrics {
     county: string;
     severity: 'HIGH' | 'MEDIUM' | 'WATCH';
     summary: string;
+    triggers: string[];
+    rainLast1h: number | null;
+    rainLast3h: number | null;
+    rainLast24h: number | null;
     forecastRainNext6h: number | null;
     forecastRainNext24h: number | null;
     forecastProbabilityMaxNext6h: number | null;
@@ -198,7 +202,7 @@ export default function NGODashboard() {
           <CardContent>
             {weatherAdvisories.length === 0 ? (
               <div className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-4 text-sm text-slate-400">
-                No strong short-term rain advisories are active right now from the current weather signals.
+                No advisory thresholds are triggered right now from forecast signals or recent rainfall pressure.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -212,7 +216,14 @@ export default function NGODashboard() {
                       <Badge className={`${advisoryColors[advisory.severity]} border text-xs`}>{advisory.severity}</Badge>
                     </div>
                     <p className="text-sm leading-6 text-slate-300">{advisory.summary}</p>
+                    <p className="mt-2 text-xs text-slate-400">
+                      Triggered by {advisory.triggers.join(', ')}.
+                    </p>
                     <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                      <div className="rounded-lg bg-slate-900/60 p-3">
+                        <p className="text-slate-500">Last 3h Rain</p>
+                        <p className="mt-1 font-semibold text-white">{advisory.rainLast3h === null ? '--' : `${advisory.rainLast3h.toFixed(1)} mm`}</p>
+                      </div>
                       <div className="rounded-lg bg-slate-900/60 p-3">
                         <p className="text-slate-500">Next 6h Rain</p>
                         <p className="mt-1 font-semibold text-white">{advisory.forecastRainNext6h === null ? '--' : `${advisory.forecastRainNext6h.toFixed(1)} mm`}</p>
