@@ -111,15 +111,14 @@ function getRainProbabilityLabel(weatherSnapshot: Zone['weatherSnapshot']): stri
 }
 
 function getProviderAgreementNote(weatherSnapshot: Zone['weatherSnapshot']): string {
-  if (!weatherSnapshot) return 'Weather providers unavailable';
+  if (!weatherSnapshot) return 'Weather signal unavailable';
 
   const hasTomorrow = Boolean(weatherSnapshot.tomorrowPayload);
   const hasOpenWeather = Boolean(weatherSnapshot.openweatherPayload);
 
-  if (hasTomorrow && hasOpenWeather) return 'Tomorrow.io and OpenWeather are closely aligned';
-  if (hasTomorrow) return 'Based on Tomorrow.io only';
-  if (hasOpenWeather) return 'Based on OpenWeather only';
-  return 'Weather providers unavailable';
+  if (hasTomorrow && hasOpenWeather) return 'Multiple weather signals are closely aligned';
+  if (hasTomorrow || hasOpenWeather) return 'Based on one active weather signal';
+  return 'Weather signal unavailable';
 }
 
 function getOperationalConfidence(weatherSnapshot: Zone['weatherSnapshot']): number | null {
@@ -868,7 +867,7 @@ export default function FloodMapPage() {
                             </div>
                           )}
                           <p className="text-xs text-slate-500 mb-1">
-                            Provider Agreement: <span className="text-white font-semibold">{(selected.weatherSnapshot.confidenceScore * 100).toFixed(0)}%</span> -
+                            Signal Agreement: <span className="text-white font-semibold">{(selected.weatherSnapshot.confidenceScore * 100).toFixed(0)}%</span> -
                             Updated: <span className="text-white">{new Date(selected.weatherSnapshot.snapshotAt).toLocaleTimeString()}</span>
                           </p>
                           <p className="text-xs text-slate-500 mb-1">{getProviderAgreementNote(selected.weatherSnapshot)}</p>
