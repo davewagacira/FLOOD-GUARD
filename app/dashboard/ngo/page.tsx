@@ -44,6 +44,20 @@ interface NgoMetrics {
     location: { name: string; county: string };
     assessments: Array<{ riskScore: number; assessedAt: string }>;
   }>;
+  weatherAdvisories: Array<{
+    zoneId: string;
+    zoneName: string;
+    county: string;
+    severity: 'HIGH' | 'MEDIUM' | 'WATCH';
+    summary: string;
+    forecastRainNext6h: number | null;
+    forecastRainNext24h: number | null;
+    forecastProbabilityMaxNext6h: number | null;
+    forecastProbabilityMaxNext24h: number | null;
+    currentIntensity: number;
+    operationalConfidence: number | null;
+    snapshotAt: string;
+  }>;
 }
 
 const severityColors: Record<string, string> = {
@@ -64,6 +78,12 @@ const distressColors: Record<string, string> = {
   NEED_HELP: 'bg-red-500/20 text-red-400',
   SAFE: 'bg-green-500/20 text-green-400',
   FREE_TEXT: 'bg-blue-500/20 text-blue-400',
+};
+
+const advisoryColors: Record<'HIGH' | 'MEDIUM' | 'WATCH', string> = {
+  HIGH: 'bg-red-500/10 text-red-400 border-red-500/30',
+  MEDIUM: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+  WATCH: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
 };
 
 export default function NGODashboard() {
@@ -106,7 +126,7 @@ export default function NGODashboard() {
     );
   }
 
-  const { metrics, incidentSeverityChart, recentIncidents, recentDistress, floodZoneRisks } = data;
+  const { metrics, incidentSeverityChart, recentIncidents, recentDistress, floodZoneRisks, weatherAdvisories } = data;
 
   const metricsData = [
     {
@@ -167,6 +187,59 @@ export default function NGODashboard() {
       </PageMotion>
 
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card className="border-slate-800 bg-slate-900/50 backdrop-blur lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Cloud className="h-5 w-5 text-cyan-400" />
+              Weather Advisories
+            </CardTitle>
+            <CardDescription className="text-slate-400">Direct forecast signals from the weather pipeline that may justify early alerts or staging.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {weatherAdvisories.length === 0 ? (
+              <div className="rounded-lg border border-slate-700/50 bg-slate-800/30 p-4 text-sm text-slate-400">
+                No strong short-term rain advisories are active right now from the current weather signals.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {weatherAdvisories.map((advisory) => (
+                  <div key={advisory.zoneId} className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{advisory.zoneName}</p>
+                        <p className="text-xs text-slate-400">{advisory.county}</p>
+                      </div>
+                      <Badge className={`${advisoryColors[advisory.severity]} border text-xs`}>{advisory.severity}</Badge>
+                    </div>
+                    <p className="text-sm leading-6 text-slate-300">{advisory.summary}</p>
+                    <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                      <div className="rounded-lg bg-slate-900/60 p-3">
+                        <p className="text-slate-500">Next 6h Rain</p>
+                        <p className="mt-1 font-semibold text-white">{advisory.forecastRainNext6h === null ? '--' : `${advisory.forecastRainNext6h.toFixed(1)} mm`}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-900/60 p-3">
+                        <p className="text-slate-500">Max 6h Rain Chance</p>
+                        <p className="mt-1 font-semibold text-white">{advisory.forecastProbabilityMaxNext6h === null ? '--' : `${advisory.forecastProbabilityMaxNext6h.toFixed(0)}%`}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-900/60 p-3">
+                        <p className="text-slate-500">Current Intensity</p>
+                        <p className="mt-1 font-semibold text-white">{advisory.currentIntensity.toFixed(2)} mm/hr</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-900/60 p-3">
+                        <p className="text-slate-500">Operational Confidence</p>
+                        <p className="mt-1 font-semibold text-white">{advisory.operationalConfidence === null ? '--' : `${(advisory.operationalConfidence * 100).toFixed(0)}%`}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-[11px] text-slate-500">
+                      Updated {new Date(advisory.snapshotAt).toLocaleTimeString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
           <CardHeader>
             <CardTitle className="text-white">Incident Severity</CardTitle>

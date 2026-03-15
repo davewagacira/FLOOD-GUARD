@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/db/prisma";
 import { startOfDay, subDays } from "date-fns";
+import { extractAggregationMetadataFromPayload, extractDerivedMetricsFromPayload } from "@/lib/weather/derived-metrics";
 
 // ─── ADMIN DASHBOARD ──────────────────────────────────────────────────────────
 
@@ -212,7 +213,14 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
             take: 20,
             orderBy: [{ riskLevel: "desc" }],
             include: {
-                location: true,
+                location: {
+                    include: {
+                        weatherSnapshots: {
+                            take: 1,
+                            orderBy: { snapshotAt: "desc" },
+                        },
+                    },
+                },
                 assessments: {
                     take: 1,
                     orderBy: { assessedAt: "desc" },
@@ -226,6 +234,69 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
         count: item._count,
     }));
 
+    const weatherAdvisories = floodZoneRisks
+        .map((zone) => {
+            const snapshot = zone.location.weatherSnapshots[0] ?? null;
+            if (!snapshot) return null;
+
+            const tomorrowDerived = extractDerivedMetricsFromPayload(snapshot.tomorrowPayload);
+            const openweatherDerived = extractDerivedMetricsFromPayload(snapshot.openweatherPayload);
+            const aggregation =
+                extractAggregationMetadataFromPayload(snapshot.tomorrowPayload).operationalConfidenceScore ??
+                extractAggregationMetadataFromPayload(snapshot.openweatherPayload).operationalConfidenceScore ??
+                null;
+
+            const forecastRainNext6h = tomorrowDerived.forecastRainNext6h ?? openweatherDerived.forecastRainNext6h;
+            const forecastRainNext24h = tomorrowDerived.forecastRainNext24h ?? openweatherDerived.forecastRainNext24h;
+            const forecastProbabilityMaxNext6h =
+                tomorrowDerived.forecastProbabilityMaxNext6h ?? openweatherDerived.forecastProbabilityMaxNext6h;
+            const forecastProbabilityMaxNext24h =
+                tomorrowDerived.forecastProbabilityMaxNext24h ?? openweatherDerived.forecastProbabilityMaxNext24h;
+
+            const forecastSeverity =
+                (forecastRainNext6h ?? 0) >= 20 || (forecastProbabilityMaxNext6h ?? 0) >= 80
+                    ? "HIGH"
+                    : (forecastRainNext6h ?? 0) >= 10 || (forecastProbabilityMaxNext6h ?? 0) >= 60
+                        ? "MEDIUM"
+                        : (forecastRainNext24h ?? 0) >= 15 || (forecastProbabilityMaxNext24h ?? 0) >= 50
+                            ? "WATCH"
+                            : null;
+
+            if (!forecastSeverity) return null;
+
+            const summary =
+                forecastSeverity === "HIGH"
+                    ? "Heavy rainfall signals suggest the zone may deteriorate quickly in the next few hours."
+                    : forecastSeverity === "MEDIUM"
+                        ? "Rainfall signals show a meaningful chance of short-term escalation."
+                        : "Forecast conditions should be watched because additional rain could worsen runoff.";
+
+            return {
+                zoneId: zone.id,
+                zoneName: zone.name,
+                county: zone.location.county,
+                severity: forecastSeverity,
+                summary,
+                forecastRainNext6h,
+                forecastRainNext24h,
+                forecastProbabilityMaxNext6h,
+                forecastProbabilityMaxNext24h,
+                currentIntensity: snapshot.precipitationIntensity,
+                operationalConfidence: aggregation,
+                snapshotAt: snapshot.snapshotAt,
+            };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null)
+        .sort((a, b) => {
+            const severityRank = { HIGH: 3, MEDIUM: 2, WATCH: 1 };
+            return (
+                severityRank[b.severity as keyof typeof severityRank] - severityRank[a.severity as keyof typeof severityRank] ||
+                (b.forecastRainNext6h ?? 0) - (a.forecastRainNext6h ?? 0) ||
+                (b.forecastProbabilityMaxNext6h ?? 0) - (a.forecastProbabilityMaxNext6h ?? 0)
+            );
+        })
+        .slice(0, 5);
+
     return {
         metrics: {
             activeIncidents,
@@ -238,6 +309,7 @@ export async function getNgoDashboardMetrics(organizationId?: string) {
         recentIncidents,
         recentDistress,
         floodZoneRisks,
+        weatherAdvisories,
     };
 }
 
