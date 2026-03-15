@@ -171,6 +171,7 @@ export default function FloodMapPage() {
   const isDisasterManager = normalizedRole === 'DISASTER_MANAGER' || normalizedRole === 'NGO';
   const canRefreshZoneWeather = isAdmin;
   const canViewAiSummary = isAdmin || isDisasterManager;
+  const [selectedRegion, setSelectedRegion] = useState('nairobi');
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
@@ -553,9 +554,23 @@ export default function FloodMapPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Live flood risk monitoring, weather intelligence, and mapped response infrastructure for Nairobi operations.
+            Live flood risk monitoring, weather intelligence, and mapped response infrastructure for current operating regions.
             {lastUpdate && <span className="ml-2 text-slate-600">Updated {lastUpdate}</span>}
           </p>
+          <div className="mt-3 max-w-xs">
+            <label htmlFor="region-selector" className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Location
+            </label>
+            <select
+              id="region-selector"
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-orange-500/40"
+            >
+              <option value="nairobi">Nairobi</option>
+            </select>
+            <p className="mt-1 text-[11px] text-slate-500">More locations coming soon.</p>
+          </div>
           {loadError && <p className="mt-2 text-xs text-red-400">{loadError}</p>}
           {actionError && <p className="mt-2 text-xs text-orange-400">{actionError}</p>}
         </div>

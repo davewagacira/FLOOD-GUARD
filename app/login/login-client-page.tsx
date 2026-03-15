@@ -58,7 +58,7 @@ export function LoginClientPage({ activeZonesCount }: LoginClientPageProps) {
       value: activeZonesCount === null ? 'Live Sync' : `${activeZonesCount} Active`,
     },
     { label: 'Alerting', value: 'SMS Ready' },
-    { label: 'Coverage', value: 'Nairobi' },
+    { label: 'Coverage', value: 'Currently Nairobi' },
   ];
 
   return (
@@ -119,6 +119,7 @@ export function LoginClientPage({ activeZonesCount }: LoginClientPageProps) {
               </div>
             </Link>
             <p className="mt-2 text-slate-400">Sign in to access the operational dashboard</p>
+            <p className="mt-1 text-xs text-slate-500">Current live coverage is Nairobi. More locations will be added as FloodGuard expands.</p>
           </div>
 
           <Card className="border border-slate-800 bg-slate-900/75 shadow-2xl shadow-black/30 backdrop-blur-xl">
