@@ -549,7 +549,7 @@ export default function FloodMapPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-white">Flood Zone Intelligence</h1>
             <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-              Beta
+              Alpha
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
