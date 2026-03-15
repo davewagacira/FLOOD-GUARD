@@ -192,7 +192,7 @@ export default function FloodMapPage() {
   const [mapsReady, setMapsReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'details' | 'weather' | 'nearby' | 'admin'>('details');
+  const [activeTab, setActiveTab] = useState<'ai-brief' | 'details' | 'weather' | 'nearby' | 'admin'>('details');
   const [aiSummaryByZone, setAiSummaryByZone] = useState<Record<string, AiZoneSummary>>({});
   const [aiSummaryLoading, setAiSummaryLoading] = useState<string | null>(null);
   const [aiSummaryError, setAiSummaryError] = useState<string | null>(null);
@@ -357,7 +357,7 @@ export default function FloodMapPage() {
   /* â”€â”€ When a zone is selected, load nearby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   useEffect(() => {
     if (selected) {
-      setActiveTab('details');
+      setActiveTab('ai-brief');
       fetchNearby(selected.id);
       fetchAiSummary(selected.id).catch(() => undefined);
       setAiSummaryError(null);
@@ -723,7 +723,7 @@ export default function FloodMapPage() {
 
                 {/* Tabs */}
                 <div className="flex border-b border-slate-800/60 flex-shrink-0">
-                  {(isAdmin ? ['details', 'weather', 'nearby', 'admin'] as const : ['details', 'weather', 'nearby'] as const).map(tab => (
+                  {(isAdmin ? ['ai-brief', 'details', 'weather', 'nearby', 'admin'] as const : ['ai-brief', 'details', 'weather', 'nearby'] as const).map(tab => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab as any)}
@@ -732,7 +732,7 @@ export default function FloodMapPage() {
                         : 'border-transparent text-slate-500 hover:text-slate-300'
                         }`}
                     >
-                      {tab}
+                      {tab === 'ai-brief' ? 'AI Brief' : tab}
                     </button>
                   ))}
                 </div>
@@ -740,10 +740,10 @@ export default function FloodMapPage() {
                 {/* Tab content â€” ONLY scroll container, no fixed height */}
                 <div className="flex-1 space-y-3 overflow-y-auto p-4">
 
-                  {/* Details tab */}
-                  {activeTab === 'details' && (
+                  {/* AI brief tab */}
+                  {activeTab === 'ai-brief' && (
                     <div className="space-y-3">
-                      {canViewAiSummary && (
+                      {canViewAiSummary ? (
                         <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/10 via-slate-900/95 to-slate-900/95 p-4 sm:p-5">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0">
@@ -843,11 +843,20 @@ export default function FloodMapPage() {
                             </div>
                           )}
                         </div>
+                      ) : (
+                        <div className="rounded-xl border border-slate-800/70 bg-slate-950/40 p-3 text-sm text-slate-400">
+                          AI brief access is currently limited for this session.
+                        </div>
                       )}
+                    </div>
+                  )}
 
+                  {/* Details tab */}
+                  {activeTab === 'details' && (
+                    <div className="space-y-3">
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {[
-                          { label: 'Population', value: (selected.population || selected.location.population || 0).toLocaleString(), color: 'text-blue-400', icon: <Users className="w-4 h-4" /> },
+                          { label: 'Estimated Population', value: (selected.population || selected.location.population || 0).toLocaleString(), color: 'text-blue-400', icon: <Users className="w-4 h-4" /> },
                           { label: 'River Proximity', value: selected.riverProximityKm ? `${selected.riverProximityKm} km` : '-', color: 'text-cyan-400', icon: <Droplets className="w-4 h-4" /> },
                           { label: 'Drainage Score', value: `${selected.drainageScore}/100`, color: 'text-yellow-400', icon: <Activity className="w-4 h-4" /> },
                           { label: 'Historical Risk', value: `${selected.historicalFloodScore}/100`, color: 'text-red-400', icon: <AlertTriangle className="w-4 h-4" /> },
