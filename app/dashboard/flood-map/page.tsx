@@ -63,6 +63,14 @@ interface AiZoneSummary {
     riskLevel: string;
     riskScore: number | null;
     precipitationIntensity: number | null;
+    precipitationProbability?: number | null;
+    rainLast1h?: number | null;
+    rainLast3h?: number | null;
+    rainLast24h?: number | null;
+    forecastRainNext6h?: number | null;
+    forecastRainNext24h?: number | null;
+    operationalConfidence?: number | null;
+    dataFreshness?: string | null;
     weatherSnapshotAt: string | null;
     assessedAt: string | null;
   };
@@ -538,7 +546,12 @@ export default function FloodMapPage() {
       {/* â”€â”€ Topbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <HeaderMotion className="flex flex-shrink-0 flex-col gap-4 border-b border-slate-800/60 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Flood Zone Intelligence</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-white">Flood Zone Intelligence</h1>
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+              Beta
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">
             Live flood risk monitoring, weather intelligence, and mapped response infrastructure for Nairobi operations.
             {lastUpdate && <span className="ml-2 text-slate-600">Updated {lastUpdate}</span>}

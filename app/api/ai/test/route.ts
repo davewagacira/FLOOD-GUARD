@@ -7,13 +7,32 @@ export async function GET() {
     try {
         const result = await analyzeFloodRisk({
             zoneName: "Kibera Flood Zone",
+            county: "Nairobi",
+            subCounty: "Langata",
+            ward: "Kibera",
             riskLevel: "CRITICAL",
             riskScore: 87,
             precipitationMm: 45,
+            precipitationProbability: 92,
+            rainLast1h: 28,
+            rainLast3h: 54,
+            rainLast24h: 118,
+            forecastRainNext6h: 32,
+            forecastRainNext24h: 86,
+            forecastProbabilityMaxNext6h: 94,
+            forecastProbabilityMaxNext24h: 88,
+            operationalConfidence: 0.87,
+            dataFreshness: "fresh",
             riverProximityKm: 0.3,
             drainageScore: 15,
             historicalFloodScore: 95,
             populationAtRisk: 350000,
+            rainfallScore: 18,
+            accumulationScore: 22,
+            forecastScore: 12,
+            riverScore: 12,
+            drainageRiskScore: 8.5,
+            dataQualityScore: 7.2,
         });
 
         return NextResponse.json({
