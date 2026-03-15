@@ -147,6 +147,14 @@ model FloodZone {
   riverProximityKm     Float?
   elevationM           Float?
   historicalFloodScore Float     @default(0)
+  currentRainThresholdMmHr Float @default(8)
+  rain1hThresholdMm    Float     @default(12)
+  rain3hThresholdMm    Float     @default(25)
+  rain24hThresholdMm   Float     @default(60)
+  forecast6hThresholdMm Float    @default(20)
+  forecast24hThresholdMm Float   @default(75)
+  triggerProbabilityThreshold Float @default(65)
+  minOperationalConfidence Float @default(0.55)
   population           Int?
   isActive             Boolean   @default(true)
   createdAt            DateTime  @default(now())
@@ -170,6 +178,18 @@ model WeatherProviderConfig {
   baseUrl   String
   isActive  Boolean         @default(true)
   isPrimary Boolean         @default(false)
+  timeoutMs Int             @default(8000)
+  maxRetries Int            @default(2)
+  consecutiveFailures Int   @default(0)
+  successCount Int          @default(0)
+  failureCount Int          @default(0)
+  circuitState ProviderCircuitState @default(CLOSED)
+  circuitOpenedAt DateTime?
+  cooldownUntil DateTime?
+  lastCheckedAt DateTime?
+  lastSuccessfulAt DateTime?
+  lastFailureAt DateTime?
+  lastError   String?
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
@@ -181,6 +201,12 @@ model WeatherProviderConfig {
 enum WeatherProvider {
   TOMORROW_IO
   OPENWEATHER
+}
+
+enum ProviderCircuitState {
+  CLOSED
+  HALF_OPEN
+  OPEN
 }
 
 model WeatherObservation {
@@ -236,10 +262,13 @@ model FloodRiskAssessment {
   riskScore       Float
   riskLevel       RiskLevel
   rainfallScore   Float
+  accumulationScore Float   @default(0)
+  forecastScore   Float     @default(0)
   riverScore      Float
   drainageScore   Float
   historicalScore Float
   elevationScore  Float
+  dataQualityScore Float    @default(0)
   assessedAt      DateTime  @default(now())
   expiresAt       DateTime
 
@@ -411,6 +440,12 @@ model Incident {
   latitude       Float?
   longitude      Float?
   affectedCount  Int?
+  verificationStatus IncidentVerificationStatus @default(UNVERIFIED)
+  roadPassability RoadPassability @default(UNKNOWN)
+  observedWaterDepthCm Float?
+  impactRadiusM  Float?
+  groundTruthNotes String?       @db.Text
+  groundTruthCapturedAt DateTime?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   resolvedAt     DateTime?
@@ -436,6 +471,20 @@ enum IncidentStatus {
   MONITORING
   RESOLVED
   CLOSED
+}
+
+enum IncidentVerificationStatus {
+  UNVERIFIED
+  CONFIRMED_DISASTER
+  FALSE_ALARM
+  MONITORING_ONLY
+}
+
+enum RoadPassability {
+  OPEN
+  LIMITED
+  CLOSED
+  UNKNOWN
 }
 
 model IncidentUpdate {

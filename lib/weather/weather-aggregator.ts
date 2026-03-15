@@ -1,44 +1,93 @@
 // Weather Aggregation Service
-// Combines Tomorrow.io + OpenWeather, normalizes, calculates confidence score
+// Combines Tomorrow.io + OpenWeather, normalizes recent/forecast rainfall, and computes operational confidence.
 
+import {
+    attachAggregationMetadata,
+    calculateOperationalConfidence,
+    maxNullable,
+    roundMetric,
+    weightedAverageNullable,
+    WeatherAggregationMetadata,
+    WeatherDerivedMetrics,
+} from "./derived-metrics";
 import { fetchTomorrowWeather, TomorrowWeatherData } from "./tomorrow-io";
 import { fetchOpenWeather, OpenWeatherData } from "./openweather";
 
-export interface NormalizedWeather {
+export interface NormalizedWeather extends WeatherDerivedMetrics {
     precipitationIntensity: number;
     precipitationProbability: number;
     humidity: number;
     windSpeed: number;
     temperature: number;
-    confidenceScore: number; // 0-1
+    confidenceScore: number; // provider agreement, kept for backward compatibility
+    providerAgreementScore: number;
+    dataCompletenessScore: number;
+    operationalConfidenceScore: number;
+    providerCount: number;
     tomorrowPayload: unknown | null;
     openweatherPayload: unknown | null;
 }
 
-/**
- * Calculates confidence score (0-1) based on agreement between two providers.
- * Lower divergence = higher confidence.
- */
-function calculateConfidence(
-    a: Pick<TomorrowWeatherData, "precipitationIntensity" | "humidity" | "windSpeed" | "temperature">,
-    b: Pick<OpenWeatherData, "precipitationIntensity" | "humidity" | "windSpeed" | "temperature">
+function calculateProviderAgreement(
+    tomorrow: Pick<TomorrowWeatherData, "precipitationIntensity" | "humidity" | "windSpeed" | "temperature"> | null,
+    openweather: Pick<OpenWeatherData, "precipitationIntensity" | "humidity" | "windSpeed" | "temperature"> | null
 ): number {
-    const diff = (x: number, y: number, scale: number) =>
-        Math.abs(x - y) / Math.max(scale, 1);
+    if (!tomorrow && !openweather) return 0;
+    if (!tomorrow || !openweather) return 0.68;
 
-    const precipDiff = diff(a.precipitationIntensity, b.precipitationIntensity, 10);
-    const humidDiff = diff(a.humidity, b.humidity, 100);
-    const windDiff = diff(a.windSpeed, b.windSpeed, 20);
-    const tempDiff = diff(a.temperature, b.temperature, 40);
+    const diff = (x: number, y: number, scale: number) => Math.abs(x - y) / Math.max(scale, 1);
+    const precipDiff = diff(tomorrow.precipitationIntensity, openweather.precipitationIntensity, 10);
+    const humidDiff = diff(tomorrow.humidity, openweather.humidity, 100);
+    const windDiff = diff(tomorrow.windSpeed, openweather.windSpeed, 20);
+    const tempDiff = diff(tomorrow.temperature, openweather.temperature, 40);
 
     const avgDivergence = (precipDiff + humidDiff + windDiff + tempDiff) / 4;
     return Math.max(0, Math.min(1, 1 - avgDivergence));
 }
 
-/**
- * Fetches weather from both providers, normalizes, and returns combined snapshot.
- * Falls back gracefully if one provider fails.
- */
+function mergeDerivedMetrics(
+    tomorrow: TomorrowWeatherData | null,
+    openweather: OpenWeatherData | null
+): WeatherDerivedMetrics {
+    const t = tomorrow?.derived;
+    const o = openweather?.derived;
+
+    return {
+        rainLast1h: roundMetric(weightedAverageNullable([
+            { value: t?.rainLast1h, weight: 0.65 },
+            { value: o?.rainLast1h, weight: 0.35 },
+        ])),
+        rainLast3h: roundMetric(weightedAverageNullable([
+            { value: t?.rainLast3h, weight: 0.65 },
+            { value: o?.rainLast3h, weight: 0.35 },
+        ])),
+        rainLast6h: roundMetric(weightedAverageNullable([
+            { value: t?.rainLast6h, weight: 0.65 },
+            { value: o?.rainLast6h, weight: 0.35 },
+        ])),
+        rainLast24h: roundMetric(weightedAverageNullable([
+            { value: t?.rainLast24h, weight: 0.65 },
+            { value: o?.rainLast24h, weight: 0.35 },
+        ])),
+        forecastRainNext6h: roundMetric(weightedAverageNullable([
+            { value: t?.forecastRainNext6h, weight: 0.65 },
+            { value: o?.forecastRainNext6h, weight: 0.35 },
+        ])),
+        forecastRainNext24h: roundMetric(weightedAverageNullable([
+            { value: t?.forecastRainNext24h, weight: 0.65 },
+            { value: o?.forecastRainNext24h, weight: 0.35 },
+        ])),
+        forecastProbabilityMaxNext6h: roundMetric(maxNullable([
+            t?.forecastProbabilityMaxNext6h,
+            o?.forecastProbabilityMaxNext6h,
+        ])),
+        forecastProbabilityMaxNext24h: roundMetric(maxNullable([
+            t?.forecastProbabilityMaxNext24h,
+            o?.forecastProbabilityMaxNext24h,
+        ])),
+    };
+}
+
 export async function aggregateWeather(
     lat: number,
     lng: number
@@ -48,65 +97,65 @@ export async function aggregateWeather(
         fetchOpenWeather(lat, lng),
     ]);
 
-    const tomorrow =
-        tomorrowResult.status === "fulfilled" ? tomorrowResult.value : null;
-    const openweather =
-        openweatherResult.status === "fulfilled" ? openweatherResult.value : null;
+    const tomorrow = tomorrowResult.status === "fulfilled" ? tomorrowResult.value : null;
+    const openweather = openweatherResult.status === "fulfilled" ? openweatherResult.value : null;
 
-    // Both failed
     if (!tomorrow && !openweather) {
         console.error("[WeatherAggregator] Both providers failed");
         return null;
     }
 
-    // Only Tomorrow.io available — use directly
-    if (tomorrow && !openweather) {
-        return {
-            precipitationIntensity: tomorrow.data.precipitationIntensity,
-            precipitationProbability: tomorrow.data.precipitationProbability,
-            humidity: tomorrow.data.humidity,
-            windSpeed: tomorrow.data.windSpeed,
-            temperature: tomorrow.data.temperature,
-            confidenceScore: 0.7, // single source penalty
-            tomorrowPayload: tomorrow.raw,
-            openweatherPayload: null,
-        };
-    }
+    const t = tomorrow?.data ?? null;
+    const o = openweather?.data ?? null;
+    const providerCount = [t, o].filter(Boolean).length;
+    const providerAgreementScore = roundMetric(calculateProviderAgreement(t, o), 3) ?? 0;
+    const dataCompletenessScore = roundMetric(weightedAverageNullable([
+        { value: t?.dataCompletenessScore ?? null, weight: 0.65 },
+        { value: o?.dataCompletenessScore ?? null, weight: 0.35 },
+    ]), 3) ?? 0;
+    const operationalConfidenceScore = roundMetric(
+        calculateOperationalConfidence(providerAgreementScore, dataCompletenessScore, providerCount),
+        3
+    ) ?? 0;
 
-    // Only OpenWeather available — use directly
-    if (!tomorrow && openweather) {
-        return {
-            precipitationIntensity: openweather.data.precipitationIntensity,
-            precipitationProbability: openweather.data.precipitationProbability,
-            humidity: openweather.data.humidity,
-            windSpeed: openweather.data.windSpeed,
-            temperature: openweather.data.temperature,
-            confidenceScore: 0.6, // single source penalty
-            tomorrowPayload: null,
-            openweatherPayload: openweather.raw,
-        };
-    }
-
-    // Both available — weight Tomorrow.io more (more accurate for forecasting)
-    const t = tomorrow!.data;
-    const o = openweather!.data;
-
-    const precipIntensity = t.precipitationIntensity * 0.65 + o.precipitationIntensity * 0.35;
-    const precipProb = t.precipitationProbability * 0.65 + o.precipitationProbability * 0.35;
-    const humidity = t.humidity * 0.6 + o.humidity * 0.4;
-    const windSpeed = t.windSpeed * 0.6 + o.windSpeed * 0.4;
-    const temperature = t.temperature * 0.6 + o.temperature * 0.4;
-
-    const confidence = calculateConfidence(t, o);
+    const derived = mergeDerivedMetrics(t, o);
+    const metadata: WeatherAggregationMetadata = {
+        ...derived,
+        providerAgreementScore,
+        dataCompletenessScore,
+        operationalConfidenceScore,
+        providerCount,
+    };
 
     return {
-        precipitationIntensity: Math.round(precipIntensity * 100) / 100,
-        precipitationProbability: Math.round(precipProb * 100) / 100,
-        humidity: Math.round(humidity * 100) / 100,
-        windSpeed: Math.round(windSpeed * 100) / 100,
-        temperature: Math.round(temperature * 100) / 100,
-        confidenceScore: Math.round(confidence * 1000) / 1000,
-        tomorrowPayload: tomorrow!.raw,
-        openweatherPayload: openweather!.raw,
+        precipitationIntensity: roundMetric(weightedAverageNullable([
+            { value: t?.precipitationIntensity ?? null, weight: 0.65 },
+            { value: o?.precipitationIntensity ?? null, weight: 0.35 },
+        ])) ?? 0,
+        precipitationProbability: roundMetric(maxNullable([
+            t?.precipitationProbability ?? null,
+            o?.precipitationProbability ?? null,
+            derived.forecastProbabilityMaxNext6h,
+        ])) ?? 0,
+        humidity: roundMetric(weightedAverageNullable([
+            { value: t?.humidity ?? null, weight: 0.6 },
+            { value: o?.humidity ?? null, weight: 0.4 },
+        ])) ?? 0,
+        windSpeed: roundMetric(weightedAverageNullable([
+            { value: t?.windSpeed ?? null, weight: 0.6 },
+            { value: o?.windSpeed ?? null, weight: 0.4 },
+        ])) ?? 0,
+        temperature: roundMetric(weightedAverageNullable([
+            { value: t?.temperature ?? null, weight: 0.6 },
+            { value: o?.temperature ?? null, weight: 0.4 },
+        ])) ?? 0,
+        confidenceScore: providerAgreementScore,
+        providerAgreementScore,
+        dataCompletenessScore,
+        operationalConfidenceScore,
+        providerCount,
+        ...derived,
+        tomorrowPayload: attachAggregationMetadata(tomorrow?.raw ?? null, metadata),
+        openweatherPayload: attachAggregationMetadata(openweather?.raw ?? null, metadata),
     };
 }

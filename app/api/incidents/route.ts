@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/server-auth";
 const ALLOWED_ROLES = ["ADMIN", "DISASTER_MANAGER"] as const;
 const SEVERITIES = new Set(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 const STATUSES = new Set(["OPEN", "IN_PROGRESS", "MONITORING", "RESOLVED", "CLOSED"]);
+const VERIFICATION_STATUSES = new Set(["UNVERIFIED", "CONFIRMED_DISASTER", "FALSE_ALARM", "MONITORING_ONLY"]);
+const ROAD_PASSABILITY = new Set(["OPEN", "LIMITED", "CLOSED", "UNKNOWN"]);
 
 function parseNumber(value: unknown) {
     if (value === null || value === undefined || value === "") return null;
@@ -68,6 +70,11 @@ export async function POST(req: NextRequest) {
         const affectedCount = parseNumber(body.affectedCount);
         const latitude = parseNumber(body.latitude);
         const longitude = parseNumber(body.longitude);
+        const verificationStatus = String(body.verificationStatus ?? "UNVERIFIED").toUpperCase();
+        const roadPassability = String(body.roadPassability ?? "UNKNOWN").toUpperCase();
+        const observedWaterDepthCm = parseNumber(body.observedWaterDepthCm);
+        const impactRadiusM = parseNumber(body.impactRadiusM);
+        const groundTruthNotes = String(body.groundTruthNotes ?? "").trim();
 
         if (!title) {
             return NextResponse.json({ error: "Incident title is required." }, { status: 400 });
@@ -79,6 +86,14 @@ export async function POST(req: NextRequest) {
 
         if (!STATUSES.has(status)) {
             return NextResponse.json({ error: "Invalid incident status." }, { status: 400 });
+        }
+
+        if (!VERIFICATION_STATUSES.has(verificationStatus)) {
+            return NextResponse.json({ error: "Invalid incident verification status." }, { status: 400 });
+        }
+
+        if (!ROAD_PASSABILITY.has(roadPassability)) {
+            return NextResponse.json({ error: "Invalid road passability status." }, { status: 400 });
         }
 
         if (locationId) {
@@ -98,6 +113,12 @@ export async function POST(req: NextRequest) {
                 latitude,
                 longitude,
                 locationId,
+                verificationStatus: verificationStatus as "UNVERIFIED" | "CONFIRMED_DISASTER" | "FALSE_ALARM" | "MONITORING_ONLY",
+                roadPassability: roadPassability as "OPEN" | "LIMITED" | "CLOSED" | "UNKNOWN",
+                observedWaterDepthCm,
+                impactRadiusM,
+                groundTruthNotes: groundTruthNotes || null,
+                groundTruthCapturedAt: verificationStatus !== "UNVERIFIED" || groundTruthNotes ? new Date() : null,
                 organizationId: auth.user.organizationId,
                 resolvedAt: status === "RESOLVED" || status === "CLOSED" ? new Date() : null,
                 updates: initialUpdate

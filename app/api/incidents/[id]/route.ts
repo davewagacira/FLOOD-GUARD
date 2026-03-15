@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/server-auth";
 const ALLOWED_ROLES = ["ADMIN", "DISASTER_MANAGER"] as const;
 const SEVERITIES = new Set(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 const STATUSES = new Set(["OPEN", "IN_PROGRESS", "MONITORING", "RESOLVED", "CLOSED"]);
+const VERIFICATION_STATUSES = new Set(["UNVERIFIED", "CONFIRMED_DISASTER", "FALSE_ALARM", "MONITORING_ONLY"]);
+const ROAD_PASSABILITY = new Set(["OPEN", "LIMITED", "CLOSED", "UNKNOWN"]);
 
 function parseNumber(value: unknown) {
     if (value === null || value === undefined || value === "") return null;
@@ -102,6 +104,11 @@ export async function PATCH(
         const affectedCount = body.affectedCount !== undefined ? parseNumber(body.affectedCount) : undefined;
         const latitude = body.latitude !== undefined ? parseNumber(body.latitude) : undefined;
         const longitude = body.longitude !== undefined ? parseNumber(body.longitude) : undefined;
+        const verificationStatus = body.verificationStatus !== undefined ? String(body.verificationStatus).toUpperCase() : undefined;
+        const roadPassability = body.roadPassability !== undefined ? String(body.roadPassability).toUpperCase() : undefined;
+        const observedWaterDepthCm = body.observedWaterDepthCm !== undefined ? parseNumber(body.observedWaterDepthCm) : undefined;
+        const impactRadiusM = body.impactRadiusM !== undefined ? parseNumber(body.impactRadiusM) : undefined;
+        const groundTruthNotes = body.groundTruthNotes !== undefined ? String(body.groundTruthNotes).trim() : undefined;
 
         if (title !== undefined && !title) {
             return NextResponse.json({ error: "Incident title cannot be empty." }, { status: 400 });
@@ -115,6 +122,14 @@ export async function PATCH(
             return NextResponse.json({ error: "Invalid incident status." }, { status: 400 });
         }
 
+        if (verificationStatus !== undefined && !VERIFICATION_STATUSES.has(verificationStatus)) {
+            return NextResponse.json({ error: "Invalid incident verification status." }, { status: 400 });
+        }
+
+        if (roadPassability !== undefined && !ROAD_PASSABILITY.has(roadPassability)) {
+            return NextResponse.json({ error: "Invalid road passability status." }, { status: 400 });
+        }
+
         await prisma.$transaction(async (tx) => {
             await tx.incident.update({
                 where: { id: params.id },
@@ -126,6 +141,14 @@ export async function PATCH(
                     ...(affectedCount !== undefined && { affectedCount: affectedCount !== null ? Math.max(0, Math.round(affectedCount)) : null }),
                     ...(latitude !== undefined && { latitude }),
                     ...(longitude !== undefined && { longitude }),
+                    ...(verificationStatus !== undefined && { verificationStatus: verificationStatus as "UNVERIFIED" | "CONFIRMED_DISASTER" | "FALSE_ALARM" | "MONITORING_ONLY" }),
+                    ...(roadPassability !== undefined && { roadPassability: roadPassability as "OPEN" | "LIMITED" | "CLOSED" | "UNKNOWN" }),
+                    ...(observedWaterDepthCm !== undefined && { observedWaterDepthCm }),
+                    ...(impactRadiusM !== undefined && { impactRadiusM }),
+                    ...(groundTruthNotes !== undefined && { groundTruthNotes: groundTruthNotes || null }),
+                    ...((verificationStatus !== undefined || observedWaterDepthCm !== undefined || impactRadiusM !== undefined || groundTruthNotes !== undefined || roadPassability !== undefined) && {
+                        groundTruthCapturedAt: new Date(),
+                    }),
                     ...(status !== undefined && {
                         resolvedAt: status === "RESOLVED" || status === "CLOSED"
                             ? new Date()
@@ -156,6 +179,7 @@ export async function PATCH(
                         status: status ?? existing.status,
                         severity: severity ?? undefined,
                         noteAdded: Boolean(updateMessage),
+                        verificationStatus: verificationStatus ?? undefined,
                     },
                 },
             });

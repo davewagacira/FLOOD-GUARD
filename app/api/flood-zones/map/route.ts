@@ -36,8 +36,11 @@ export async function GET(req: Request) {
                     riskScore: true,
                     riskLevel: true,
                     rainfallScore: true,
+                    accumulationScore: true,
+                    forecastScore: true,
                     riverScore: true,
                     drainageScore: true,
+                    dataQualityScore: true,
                     assessedAt: true,
                     expiresAt: true,
                 },
@@ -61,6 +64,8 @@ export async function GET(req: Request) {
                     windSpeed: true,
                     confidenceScore: true,
                     snapshotAt: true,
+                    tomorrowPayload: true,
+                    openweatherPayload: true,
                 },
             });
 

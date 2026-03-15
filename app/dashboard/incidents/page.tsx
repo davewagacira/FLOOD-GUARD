@@ -14,6 +14,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 
 type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'MONITORING' | 'RESOLVED' | 'CLOSED';
 type IncidentSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+type IncidentVerificationStatus = 'UNVERIFIED' | 'CONFIRMED_DISASTER' | 'FALSE_ALARM' | 'MONITORING_ONLY';
+type RoadPassability = 'OPEN' | 'LIMITED' | 'CLOSED' | 'UNKNOWN';
 
 interface IncidentSummary {
   id: string;
@@ -27,6 +29,12 @@ interface IncidentSummary {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string | null;
+  verificationStatus: IncidentVerificationStatus;
+  roadPassability: RoadPassability;
+  observedWaterDepthCm: number | null;
+  impactRadiusM: number | null;
+  groundTruthNotes: string | null;
+  groundTruthCapturedAt?: string | null;
   locationName?: string | null;
   county?: string | null;
   latestUpdate?: { id: string; message: string; updatedBy: string | null; createdAt: string } | null;
@@ -88,7 +96,18 @@ export default function IncidentsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [createForm, setCreateForm] = useState(initialForm);
-  const [updateForm, setUpdateForm] = useState({ status: 'OPEN' as IncidentStatus, severity: 'MEDIUM' as IncidentSeverity, affectedCount: '', description: '', updateMessage: '' });
+  const [updateForm, setUpdateForm] = useState({
+    status: 'OPEN' as IncidentStatus,
+    severity: 'MEDIUM' as IncidentSeverity,
+    affectedCount: '',
+    description: '',
+    updateMessage: '',
+    verificationStatus: 'UNVERIFIED' as IncidentVerificationStatus,
+    roadPassability: 'UNKNOWN' as RoadPassability,
+    observedWaterDepthCm: '',
+    impactRadiusM: '',
+    groundTruthNotes: '',
+  });
 
   const fetchIncidents = useCallback(async () => {
     const response = await fetch('/api/incidents', { cache: 'no-store' });
@@ -125,13 +144,18 @@ export default function IncidentsPage() {
       if (!response.ok) throw new Error('Failed to load incident details.');
       const detail = await response.json() as IncidentDetail;
       setSelectedIncident(detail);
-      setUpdateForm({
-        status: detail.status,
-        severity: detail.severity,
-        affectedCount: detail.affectedCount?.toString() ?? '',
-        description: detail.description ?? '',
-        updateMessage: '',
-      });
+        setUpdateForm({
+          status: detail.status,
+          severity: detail.severity,
+          affectedCount: detail.affectedCount?.toString() ?? '',
+          description: detail.description ?? '',
+          updateMessage: '',
+          verificationStatus: detail.verificationStatus,
+          roadPassability: detail.roadPassability,
+          observedWaterDepthCm: detail.observedWaterDepthCm?.toString() ?? '',
+          impactRadiusM: detail.impactRadiusM?.toString() ?? '',
+          groundTruthNotes: detail.groundTruthNotes ?? '',
+        });
     } catch (err) {
       setUpdateError(err instanceof Error ? err.message : 'Failed to load incident details.');
       setSelectedIncident(null);
@@ -257,6 +281,7 @@ export default function IncidentsPage() {
                         <h3 className="text-lg font-semibold text-white">{incident.title}</h3>
                         <Badge className={`${severityColors[incident.severity]} border text-xs`}>{incident.severity}</Badge>
                         <Badge className={`${statusColors[incident.status]} text-xs`}>{incident.status.replace('_', ' ')}</Badge>
+                        <Badge className="bg-slate-800 text-slate-300 border border-slate-700 text-xs">{incident.verificationStatus.replaceAll('_', ' ')}</Badge>
                       </div>
                       {incident.description && <p className="mb-3 text-sm text-slate-400">{incident.description}</p>}
                       <div className="grid gap-4 rounded-lg bg-slate-800/30 p-4 md:grid-cols-5">
@@ -379,6 +404,8 @@ export default function IncidentsPage() {
                   <Card className="border-slate-800 bg-slate-900/50"><CardContent className="p-4"><p className="text-xs text-slate-500">Distress Signals</p><p className="mt-1 text-lg font-semibold text-white">{selectedIncident._count.distressSignals}</p></CardContent></Card>
                   <Card className="border-slate-800 bg-slate-900/50"><CardContent className="p-4"><p className="text-xs text-slate-500">Deployments</p><p className="mt-1 text-lg font-semibold text-white">{selectedIncident._count.deployments}</p></CardContent></Card>
                   <Card className="border-slate-800 bg-slate-900/50"><CardContent className="p-4"><p className="text-xs text-slate-500">Coordinates</p><p className="mt-1 text-sm font-semibold text-white">{selectedIncident.latitude && selectedIncident.longitude ? `${selectedIncident.latitude.toFixed(5)}, ${selectedIncident.longitude.toFixed(5)}` : 'Manual incident'}</p></CardContent></Card>
+                  <Card className="border-slate-800 bg-slate-900/50"><CardContent className="p-4"><p className="text-xs text-slate-500">Verification</p><p className="mt-1 text-sm font-semibold text-white">{selectedIncident.verificationStatus.replaceAll('_', ' ')}</p></CardContent></Card>
+                  <Card className="border-slate-800 bg-slate-900/50"><CardContent className="p-4"><p className="text-xs text-slate-500">Road Passability</p><p className="mt-1 text-sm font-semibold text-white">{selectedIncident.roadPassability}</p></CardContent></Card>
                 </div>
 
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
@@ -411,9 +438,33 @@ export default function IncidentsPage() {
                       <label className="mb-2 block text-sm text-slate-300">Affected Count</label>
                       <Input value={updateForm.affectedCount} onChange={(e) => setUpdateForm((current) => ({ ...current, affectedCount: e.target.value }))} className="border-slate-700 bg-slate-950 text-white" />
                     </div>
+                    <div>
+                      <label className="mb-2 block text-sm text-slate-300">Verification</label>
+                      <select value={updateForm.verificationStatus} onChange={(e) => setUpdateForm((current) => ({ ...current, verificationStatus: e.target.value as IncidentVerificationStatus }))} className="h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 text-sm text-white">
+                        {['UNVERIFIED', 'CONFIRMED_DISASTER', 'FALSE_ALARM', 'MONITORING_ONLY'].map((status) => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm text-slate-300">Road Passability</label>
+                      <select value={updateForm.roadPassability} onChange={(e) => setUpdateForm((current) => ({ ...current, roadPassability: e.target.value as RoadPassability }))} className="h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 text-sm text-white">
+                        {['UNKNOWN', 'OPEN', 'LIMITED', 'CLOSED'].map((status) => <option key={status} value={status}>{status}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm text-slate-300">Water Depth (cm)</label>
+                      <Input value={updateForm.observedWaterDepthCm} onChange={(e) => setUpdateForm((current) => ({ ...current, observedWaterDepthCm: e.target.value }))} className="border-slate-700 bg-slate-950 text-white" />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm text-slate-300">Impact Radius (m)</label>
+                      <Input value={updateForm.impactRadiusM} onChange={(e) => setUpdateForm((current) => ({ ...current, impactRadiusM: e.target.value }))} className="border-slate-700 bg-slate-950 text-white" />
+                    </div>
                     <div className="md:col-span-2">
                       <label className="mb-2 block text-sm text-slate-300">Description</label>
                       <Textarea value={updateForm.description} onChange={(e) => setUpdateForm((current) => ({ ...current, description: e.target.value }))} className="border-slate-700 bg-slate-950 text-white" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="mb-2 block text-sm text-slate-300">Ground Truth Notes</label>
+                      <Textarea value={updateForm.groundTruthNotes} onChange={(e) => setUpdateForm((current) => ({ ...current, groundTruthNotes: e.target.value }))} className="border-slate-700 bg-slate-950 text-white" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="mb-2 block text-sm text-slate-300">Update Note</label>

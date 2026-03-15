@@ -306,6 +306,18 @@ async function main() {
             isUrban: true,
         },
         {
+            id: "loc-parklands",
+            name: "Westlands-Parklands",
+            county: "Nairobi",
+            subCounty: "Westlands",
+            ward: "Parklands/Highridge",
+            latitude: -1.2554,
+            longitude: 36.8138,
+            population: 85000,
+            areaKm2: 4.3,
+            isUrban: true,
+        },
+        {
             id: "loc-gikomba",
             name: "Gikomba",
             county: "Nairobi",
@@ -704,6 +716,26 @@ async function main() {
             },
         },
         {
+            id: "fz-parklands",
+            name: "Westlands-Parklands Flood Zone",
+            code: "NBI-FZ-020",
+            locationId: "loc-parklands",
+            organizationId: redCrossOrg.id,
+            riskLevel: "HIGH" as const,
+            drainageScore: 31,
+            riverProximityKm: 0.4,
+            elevationM: 1684,
+            historicalFloodScore: 69,
+            population: 85000,
+            polygonCoordinates: {
+                type: "Polygon",
+                coordinates: [[
+                    [36.8040, -1.2490], [36.8230, -1.2490],
+                    [36.8230, -1.2620], [36.8040, -1.2620], [36.8040, -1.2490],
+                ]],
+            },
+        },
+        {
             id: "fz-gikomba",
             name: "Gikomba Riverbank Flood Zone",
             code: "NBI-FZ-014",
@@ -892,7 +924,14 @@ async function main() {
 
     await prisma.weatherProviderConfig.upsert({
         where: { id: "wp-tomorrow" },
-        update: {},
+        update: {
+            apiKey: process.env.TOMORROW_API_KEY || "",
+            baseUrl: "https://api.tomorrow.io/v4",
+            isActive: true,
+            isPrimary: true,
+            timeoutMs: 8000,
+            maxRetries: 2,
+        },
         create: {
             id: "wp-tomorrow",
             provider: "TOMORROW_IO",
@@ -900,12 +939,21 @@ async function main() {
             baseUrl: "https://api.tomorrow.io/v4",
             isActive: true,
             isPrimary: true,
+            timeoutMs: 8000,
+            maxRetries: 2,
         },
     });
 
     await prisma.weatherProviderConfig.upsert({
         where: { id: "wp-openweather" },
-        update: {},
+        update: {
+            apiKey: process.env.OPENWEATHER_API_KEY || "",
+            baseUrl: "https://api.openweathermap.org/data/2.5",
+            isActive: true,
+            isPrimary: false,
+            timeoutMs: 8000,
+            maxRetries: 2,
+        },
         create: {
             id: "wp-openweather",
             provider: "OPENWEATHER",
@@ -913,6 +961,8 @@ async function main() {
             baseUrl: "https://api.openweathermap.org/data/2.5",
             isActive: true,
             isPrimary: false,
+            timeoutMs: 8000,
+            maxRetries: 2,
         },
     });
 

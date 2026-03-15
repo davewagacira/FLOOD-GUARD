@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HeaderMotion, LiveBadge } from '@/components/ui/motion';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
+import { extractAggregationMetadataFromPayload, extractDerivedMetricsFromPayload } from '@/lib/weather/derived-metrics';
 
 /* â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 interface Zone {
@@ -25,8 +26,28 @@ interface Zone {
   weatherDataFresh?: boolean;
   polygonCoordinates: { lat: number; lng: number }[] | null;
   location: { name: string; county: string; latitude: number; longitude: number; population: number | null };
-  assessments: Array<{ riskScore: number; riskLevel: string; rainfallScore?: number; riverScore?: number; drainageScore?: number; assessedAt: string }>;
-  weatherSnapshot?: { temperature: number; humidity: number; precipitationIntensity: number; precipitationProbability: number; windSpeed: number; confidenceScore: number; snapshotAt: string } | null;
+  assessments: Array<{
+    riskScore: number;
+    riskLevel: string;
+    rainfallScore?: number;
+    accumulationScore?: number;
+    forecastScore?: number;
+    riverScore?: number;
+    drainageScore?: number;
+    dataQualityScore?: number;
+    assessedAt: string;
+  }>;
+  weatherSnapshot?: {
+    temperature: number;
+    humidity: number;
+    precipitationIntensity: number;
+    precipitationProbability: number;
+    windSpeed: number;
+    confidenceScore: number;
+    snapshotAt: string;
+    tomorrowPayload?: unknown | null;
+    openweatherPayload?: unknown | null;
+  } | null;
 }
 
 interface NearbyPlace { id: string; name: string; address: string; rating: number | null; lat: number; lng: number; open: boolean | null; }
@@ -61,6 +82,55 @@ const compactNumber = new Intl.NumberFormat('en-KE', {
   notation: 'compact',
   maximumFractionDigits: 1,
 });
+
+function getMergedDerivedMetrics(weatherSnapshot: Zone['weatherSnapshot']) {
+  const tomorrow = extractDerivedMetricsFromPayload(weatherSnapshot?.tomorrowPayload);
+  const openweather = extractDerivedMetricsFromPayload(weatherSnapshot?.openweatherPayload);
+
+  return {
+    rainLast1h: tomorrow.rainLast1h ?? openweather.rainLast1h,
+    rainLast3h: tomorrow.rainLast3h ?? openweather.rainLast3h,
+    rainLast6h: tomorrow.rainLast6h ?? openweather.rainLast6h,
+    rainLast24h: tomorrow.rainLast24h ?? openweather.rainLast24h,
+    forecastRainNext6h: tomorrow.forecastRainNext6h ?? openweather.forecastRainNext6h,
+    forecastRainNext24h: tomorrow.forecastRainNext24h ?? openweather.forecastRainNext24h,
+    forecastProbabilityMaxNext6h: tomorrow.forecastProbabilityMaxNext6h ?? openweather.forecastProbabilityMaxNext6h,
+    forecastProbabilityMaxNext24h: tomorrow.forecastProbabilityMaxNext24h ?? openweather.forecastProbabilityMaxNext24h,
+  };
+}
+
+function getRainProbabilityLabel(weatherSnapshot: Zone['weatherSnapshot']): string {
+  if (!weatherSnapshot) return 'Rain Probability';
+
+  const hasTomorrow = Boolean(weatherSnapshot.tomorrowPayload);
+  const hasOpenWeather = Boolean(weatherSnapshot.openweatherPayload);
+
+  if (hasTomorrow && hasOpenWeather) return 'Rain Probability';
+  if (hasTomorrow) return 'Rain Probability';
+  return 'Near-Term Rain Probability';
+}
+
+function getProviderAgreementNote(weatherSnapshot: Zone['weatherSnapshot']): string {
+  if (!weatherSnapshot) return 'Weather providers unavailable';
+
+  const hasTomorrow = Boolean(weatherSnapshot.tomorrowPayload);
+  const hasOpenWeather = Boolean(weatherSnapshot.openweatherPayload);
+
+  if (hasTomorrow && hasOpenWeather) return 'Tomorrow.io and OpenWeather are closely aligned';
+  if (hasTomorrow) return 'Based on Tomorrow.io only';
+  if (hasOpenWeather) return 'Based on OpenWeather only';
+  return 'Weather providers unavailable';
+}
+
+function getOperationalConfidence(weatherSnapshot: Zone['weatherSnapshot']): number | null {
+  if (!weatherSnapshot) return null;
+
+  const tomorrowMeta = extractAggregationMetadataFromPayload(weatherSnapshot.tomorrowPayload);
+  const openweatherMeta = extractAggregationMetadataFromPayload(weatherSnapshot.openweatherPayload);
+  const operationalConfidence = tomorrowMeta.operationalConfidenceScore ?? openweatherMeta.operationalConfidenceScore;
+
+  return typeof operationalConfidence === 'number' ? operationalConfidence : null;
+}
 
 /* â”€â”€ Icon map for nearby places â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const PLACE_ICONS: Record<string, React.ReactNode> = {
@@ -761,10 +831,13 @@ export default function FloodMapPage() {
                         {selected.assessments[0] && (
                           <div className="bg-slate-800/40 rounded-xl p-3 sm:col-span-2">
                             <p className="text-xs text-slate-400 mb-2 font-semibold">Risk Score Breakdown</p>
-                            {[
-                              { label: 'Rainfall', value: selected.assessments[0].rainfallScore ?? 0, color: 'bg-blue-500' },
+                            {[ 
+                              { label: 'Current Rain', value: selected.assessments[0].rainfallScore ?? 0, color: 'bg-blue-500' },
+                              { label: 'Accumulation', value: selected.assessments[0].accumulationScore ?? 0, color: 'bg-sky-500' },
+                              { label: 'Forecast', value: selected.assessments[0].forecastScore ?? 0, color: 'bg-indigo-500' },
                               { label: 'River', value: selected.assessments[0].riverScore ?? 0, color: 'bg-cyan-500' },
                               { label: 'Drainage', value: selected.assessments[0].drainageScore ?? 0, color: 'bg-yellow-500' },
+                              { label: 'Data Quality', value: selected.assessments[0].dataQualityScore ?? 0, color: 'bg-emerald-500' },
                             ].map(b => (
                               <div key={b.label} className="mb-2">
                                 <div className="flex justify-between text-xs text-slate-500 mb-1"><span>{b.label}</span><span>{b.value.toFixed(1)}</span></div>
@@ -790,16 +863,25 @@ export default function FloodMapPage() {
                               <p className="mt-1 text-xs text-slate-400">Refresh this zone before using the weather values for operational decisions.</p>
                             </div>
                           )}
-                          <p className="text-xs text-slate-500 mb-3">
-                            Confidence: <span className="text-white font-semibold">{(selected.weatherSnapshot.confidenceScore * 100).toFixed(0)}%</span> -
+                          <p className="text-xs text-slate-500 mb-1">
+                            Provider Agreement: <span className="text-white font-semibold">{(selected.weatherSnapshot.confidenceScore * 100).toFixed(0)}%</span> -
                             Updated: <span className="text-white">{new Date(selected.weatherSnapshot.snapshotAt).toLocaleTimeString()}</span>
+                          </p>
+                          <p className="text-xs text-slate-500 mb-1">{getProviderAgreementNote(selected.weatherSnapshot)}</p>
+                          <p className="text-xs text-slate-500 mb-3">
+                            Operational Confidence: <span className="text-white font-semibold">
+                              {(() => {
+                                const operationalConfidence = getOperationalConfidence(selected.weatherSnapshot);
+                                return operationalConfidence === null ? '--' : `${(operationalConfidence * 100).toFixed(0)}%`;
+                              })()}
+                            </span>
                           </p>
                           <div className="grid grid-cols-2 gap-3">
                             {[
                               { label: 'Temperature', value: `${selected.weatherSnapshot.temperature.toFixed(1)}°C`, color: 'text-orange-400', icon: <Thermometer className="w-4 h-4" />, bg: 'bg-orange-500/10' },
                               { label: 'Humidity', value: `${selected.weatherSnapshot.humidity.toFixed(0)}%`, color: 'text-blue-400', icon: <Droplets className="w-4 h-4" />, bg: 'bg-blue-500/10' },
-                              { label: 'Rain Intensity', value: `${selected.weatherSnapshot.precipitationIntensity.toFixed(2)} mm/hr`, color: 'text-cyan-400', icon: <Cloud className="w-4 h-4" />, bg: 'bg-cyan-500/10' },
-                              { label: 'Rain Probability', value: `${selected.weatherSnapshot.precipitationProbability.toFixed(0)}%`, color: 'text-purple-400', icon: <Cloud className="w-4 h-4" />, bg: 'bg-purple-500/10' },
+                              { label: 'Rain Intensity (Now)', value: `${selected.weatherSnapshot.precipitationIntensity.toFixed(2)} mm/hr`, color: 'text-cyan-400', icon: <Cloud className="w-4 h-4" />, bg: 'bg-cyan-500/10' },
+                              { label: getRainProbabilityLabel(selected.weatherSnapshot), value: `${selected.weatherSnapshot.precipitationProbability.toFixed(0)}%`, color: 'text-purple-400', icon: <Cloud className="w-4 h-4" />, bg: 'bg-purple-500/10' },
                               { label: 'Wind Speed', value: `${selected.weatherSnapshot.windSpeed.toFixed(1)} m/s`, color: 'text-green-400', icon: <Wind className="w-4 h-4" />, bg: 'bg-green-500/10' },
                             ].map(w => (
                               <div key={w.label} className={`${w.bg} border border-slate-700/40 rounded-xl p-3`}>
@@ -817,6 +899,58 @@ export default function FloodMapPage() {
                                 </div>
                               </div>
                             )}
+                          </div>
+                          <div className="mt-3 rounded-xl border border-slate-700/40 bg-slate-900/50 p-3">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Recent Rainfall</p>
+                              <p className="text-[11px] text-slate-500">From provider payloads when available</p>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                              {(() => {
+                                const rainfall = getMergedDerivedMetrics(selected.weatherSnapshot);
+
+                                return [
+                                  { label: 'Last 1h', value: rainfall.rainLast1h },
+                                  { label: 'Last 3h', value: rainfall.rainLast3h },
+                                  { label: 'Last 24h', value: rainfall.rainLast24h },
+                                ].map((item) => (
+                                  <div key={item.label} className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3">
+                                    <p className="text-xs text-slate-500">{item.label}</p>
+                                    <p className="mt-1 text-base font-semibold text-slate-100">
+                                      {item.value === null ? '--' : `${item.value.toFixed(2)} mm`}
+                                    </p>
+                                  </div>
+                                ));
+                              })()}
+                            </div>
+                            <p className="mt-2 text-[11px] text-slate-500">
+                              Recent accumulation is shown when at least one provider supplies enough data. Flooding can continue after `Rain Intensity (Now)` falls to 0.00 mm/hr.
+                            </p>
+                          </div>
+                          <div className="mt-3 rounded-xl border border-slate-700/40 bg-slate-900/50 p-3">
+                            <div className="mb-2 flex items-center justify-between gap-3">
+                              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Forecast Rain</p>
+                              <p className="text-[11px] text-slate-500">Upcoming precipitation that can worsen runoff</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              {(() => {
+                                const rainfall = getMergedDerivedMetrics(selected.weatherSnapshot);
+
+                                return [
+                                  { label: 'Next 6h', value: rainfall.forecastRainNext6h, suffix: 'mm' },
+                                  { label: 'Next 24h', value: rainfall.forecastRainNext24h, suffix: 'mm' },
+                                  { label: 'Max Rain Chance 6h', value: rainfall.forecastProbabilityMaxNext6h, suffix: '%' },
+                                  { label: 'Max Rain Chance 24h', value: rainfall.forecastProbabilityMaxNext24h, suffix: '%' },
+                                ].map((item) => (
+                                  <div key={item.label} className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3">
+                                    <p className="text-xs text-slate-500">{item.label}</p>
+                                    <p className="mt-1 text-base font-semibold text-slate-100">
+                                      {item.value === null ? '--' : `${item.value.toFixed(2)} ${item.suffix}`}
+                                    </p>
+                                  </div>
+                                ));
+                              })()}
+                            </div>
                           </div>
                         </div>
                       ) : (

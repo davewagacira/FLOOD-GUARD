@@ -1,37 +1,67 @@
 // OpenWeather API Service (secondary weather provider)
-// Docs: https://openweathermap.org/current
+// Uses current weather plus 3-hour forecast windows for production flood operations.
+
+import { calculateDataCompleteness, emptyDerivedMetrics, roundMetric, WeatherDerivedMetrics } from "./derived-metrics";
+import { fetchWithProviderReliability } from "./provider-reliability";
 
 export interface OpenWeatherData {
-    precipitationIntensity: number; // mm/hr (last hour rain)
-    precipitationProbability: number; // clouds as proxy (0-100)
+    precipitationIntensity: number; // mm/hr (last hour rain when available)
+    precipitationProbability: number; // 0-100 from near-term forecast POP
     humidity: number; // %
     windSpeed: number; // m/s
     windDirection: number; // degrees
     temperature: number; // Celsius
     cloudCover: number; // %
-    uvIndex: number; // not in current, set to 0
+    uvIndex: number; // not in current endpoint
+    derived: WeatherDerivedMetrics;
+    dataCompletenessScore: number; // 0-1
 }
 
-interface OpenWeatherApiResponse {
-    weather: { id: number; description: string }[];
-    main: {
-        temp: number;
-        humidity: number;
-        feels_like: number;
+interface OpenWeatherCurrentResponse {
+    main?: {
+        temp?: number;
+        humidity?: number;
     };
-    wind: {
-        speed: number;
-        deg: number;
+    wind?: {
+        speed?: number;
+        deg?: number;
     };
-    clouds: {
-        all: number;
+    clouds?: {
+        all?: number;
     };
     rain?: {
         "1h"?: number;
         "3h"?: number;
     };
-    dt: number;
-    name: string;
+    dt?: number;
+    name?: string;
+}
+
+interface OpenWeatherForecastResponse {
+    list?: Array<{
+        dt?: number;
+        pop?: number;
+        rain?: {
+            "3h"?: number;
+        };
+        main?: {
+            temp?: number;
+            humidity?: number;
+        };
+    }>;
+    city?: {
+        name?: string;
+    };
+}
+
+function sumForecastRain(intervals: Array<{ rainMm: number; pop: number }>, count: number) {
+    const slice = intervals.slice(0, count);
+    if (slice.length === 0) return { rain: null, probabilityMax: null };
+
+    return {
+        rain: roundMetric(slice.reduce((sum, interval) => sum + interval.rainMm, 0)),
+        probabilityMax: roundMetric(Math.max(...slice.map((interval) => interval.pop))),
+    };
 }
 
 export async function fetchOpenWeather(
@@ -44,38 +74,77 @@ export async function fetchOpenWeather(
         return null;
     }
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`;
+    const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`;
 
     try {
-        const res = await fetch(url, {
-            next: { revalidate: 300 }, // cache 5 min
-        });
+        const [currentRes, forecastRes] = await Promise.all([
+            fetchWithProviderReliability("OPENWEATHER", currentUrl),
+            fetchWithProviderReliability("OPENWEATHER", forecastUrl),
+        ]);
 
-        if (!res.ok) {
-            const errText = await res.text();
-            console.error(`[OpenWeather] Error ${res.status}: ${errText}`);
+        if (!currentRes) {
+            console.error("[OpenWeather] Current request failed after retries");
             return null;
         }
 
-        const json: OpenWeatherApiResponse = await res.json();
+        const currentJson: OpenWeatherCurrentResponse = await currentRes.json();
+        const forecastJson: OpenWeatherForecastResponse | null = forecastRes
+            ? await forecastRes.json()
+            : null;
 
-        // Convert cloud cover to a precipitation probability proxy
-        // Use actual rain if available, otherwise derive from clouds
-        const rainMmHr = json.rain?.["1h"] ?? 0;
-        const cloudProxy = json.clouds?.all ?? 0; // 0-100
+        const forecastIntervals = (forecastJson?.list ?? []).map((interval) => ({
+            rainMm: interval.rain?.["3h"] ?? 0,
+            pop: (interval.pop ?? 0) * 100,
+        }));
+        const next6h = sumForecastRain(forecastIntervals, 2);
+        const next24h = sumForecastRain(forecastIntervals, 8);
+        const nearTermProbability = forecastIntervals[0]?.pop ?? 0;
 
-        const data: OpenWeatherData = {
-            precipitationIntensity: rainMmHr,
-            precipitationProbability: cloudProxy, // proxy when no forecast available
-            humidity: json.main?.humidity ?? 0,
-            windSpeed: json.wind?.speed ?? 0,
-            windDirection: json.wind?.deg ?? 0,
-            temperature: json.main?.temp ?? 0,
-            cloudCover: json.clouds?.all ?? 0,
-            uvIndex: 0, // not in current endpoint
+        const derived: WeatherDerivedMetrics = {
+            ...emptyDerivedMetrics(),
+            rainLast1h: roundMetric(currentJson.rain?.["1h"] ?? null),
+            rainLast3h: roundMetric(currentJson.rain?.["3h"] ?? null),
+            forecastRainNext6h: next6h.rain,
+            forecastRainNext24h: next24h.rain,
+            forecastProbabilityMaxNext6h: next6h.probabilityMax,
+            forecastProbabilityMaxNext24h: next24h.probabilityMax,
         };
 
-        return { data, raw: json };
+        const completeness = calculateDataCompleteness([
+            currentJson.rain?.["1h"] ?? null,
+            nearTermProbability,
+            currentJson.main?.humidity ?? null,
+            currentJson.wind?.speed ?? null,
+            currentJson.main?.temp ?? null,
+            derived.forecastRainNext6h,
+            derived.forecastRainNext24h,
+            derived.forecastProbabilityMaxNext6h,
+            derived.forecastProbabilityMaxNext24h,
+        ]);
+
+        const data: OpenWeatherData = {
+            precipitationIntensity: currentJson.rain?.["1h"] ?? 0,
+            precipitationProbability: nearTermProbability,
+            humidity: currentJson.main?.humidity ?? 0,
+            windSpeed: currentJson.wind?.speed ?? 0,
+            windDirection: currentJson.wind?.deg ?? 0,
+            temperature: currentJson.main?.temp ?? 0,
+            cloudCover: currentJson.clouds?.all ?? 0,
+            uvIndex: 0,
+            derived,
+            dataCompletenessScore: roundMetric(completeness, 3) ?? 0,
+        };
+
+        return {
+            data,
+            raw: {
+                provider: "OPENWEATHER",
+                current: currentJson,
+                forecast: forecastJson,
+                derived,
+            },
+        };
     } catch (err) {
         console.error("[OpenWeather] Fetch failed:", err);
         return null;

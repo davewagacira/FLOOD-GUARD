@@ -234,7 +234,7 @@ export default function LandingPage() {
               className="ml-1 cursor-pointer"
             >
               <span className="bg-gradient-to-r from-red-600 to-blue-500 bg-clip-text text-sm font-bold text-transparent transition-colors hover:from-red-500 hover:to-blue-400">
-                Syndicate
+                C
               </span>
             </a>
           </div>
